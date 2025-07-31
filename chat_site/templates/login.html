@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - ChitChat</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-container { background: #fff; padding: 2rem 2.5rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        h2 { margin-bottom: 1.5rem; color: #333; }
+        form { display: flex; flex-direction: column; }
+        label { margin-bottom: 0.5rem; color: #555; }
+        input[type="text"], input[type="password"] { padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 0.6rem; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #357abd; }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>Welcome to ChitChat! Please Login:</h2>
+        <form id="login-form" method="post" action="{% url 'login_request' %}">
+            {% csrf_token %}
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+
+            <button type="submit">Login</button>
+            <div id="login-error" style="color: red; margin-top: 1rem; display: none;">Invalid username or password.</div>
+        </form>
+        <script>
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            const csrfToken = form.querySelector('[name=csrfmiddlewaretoken]').value;
+            const errorDiv = document.getElementById('login-error');
+            errorDiv.style.display = 'none';
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken,
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    body: formData
+                });
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    const text = await response.text();
+                    if (text.includes('Please enter a correct username and password')) {
+                        errorDiv.style.display = 'block';
+                    } else {
+                        // fallback: reload or show generic error
+                        errorDiv.textContent = 'Login failed.';
+                        errorDiv.style.display = 'block';
+                    }
+                }
+            } catch (err) {
+                errorDiv.textContent = 'An error occurred.';
+                errorDiv.style.display = 'block';
+            }
+        });
+        </script>
+    </div>
+</body>
+</html>
