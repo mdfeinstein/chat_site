@@ -40,60 +40,56 @@
         input[type="text"], input[type="password"] { padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
         button { padding: 0.6rem; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
         button:hover { background: #357abd; }
+        
+        #send-message-form { 
+          display: flex;
+          flex-direction: row;
+          width: 80%;
+          height: 100px;
+          box-sizing: border-box;
+          }
+
+          .chat-textarea {
+          flex: 0 0 80%;
+          height: 100%;
+          box-sizing: border-box;
+          }
+
+        .send-message-button {
+          flex: 0 0 20%;
+          height: 100%;
+          box-sizing: border-box;
+          }
+
+
 </style>
 </head>
 <body>
     <div class="topbar-container">
       <button onclick="window.location.href='{% url 'home' %}'">Home</button>
               <h2>Chat with {{ chat }}</h2>
-      <form method="post" action="{% url 'logout' %}" style="display:inline; margin: 0;">
+      <form method="post" action="{% url 'exit_chat' %}">
         {% csrf_token %}
-        <button type="submit">Logout</button>
+        <input type="hidden" name="chat_pk" value="{{chat.pk}}">
+        <button type="submit" style="align-self: right;">Exit Chat</button>
+      </form>
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" style="align-self: right;">Logout</button>
       </form>
     </div>
     <div class="chat-container" id="chat-container">
         {% include '_messages.html' %}
     </div>
 
-    {% comment %} <script>
-      // Scroll chat container to bottom on page load
-      document.addEventListener('DOMContentLoaded', function() {
-        var chatContainer = document.getElementById('chat-container');
-        if (chatContainer) {
-          chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-      });
-    </script> {% endcomment %}
-
-
-
-    <div class="send-message-container" style="height:20vh; width:80vw; overflow-y:auto; margin: 1rem auto 0 auto; display: flex; align-items: center; justify-content: center;">
-      <form id="send-message-form" method="post" action="{% url 'send_message' %}" style="width:100%; display: flex; align-items: center;">
+      <form id="send-message-form" method="post" action="{% url 'send_message' %}">
         {% csrf_token %}
-        <div style="flex: 0 0 90%; max-width: 90%;">
-          {{ message_form.as_p }}
+          <textarea class="chat-textarea" name="text"
+           placeholder="Type message here..."
+           required></textarea>
           <input type="hidden" name="chat_number" value="{{chat_number}}">
-        </div>
-        <div style="flex: 0 0 10%; max-width: 10%; display: flex; align-items: center; justify-content: flex-end;">
-          <button type="submit" style="width: 100%;">Send Message</button>
-        </div>
+          <button class="send-message-button" type="submit">Send Message</button>
       </form>
-    </div>
-
-    {% comment %} <script>
-      document.addEventListener('DOMContentLoaded', function() {
-      const form = document.getElementById('send-message-form');
-      const input = form.querySelector('input[type="text"], textarea');
-      if (input) {
-        input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-        }
-        });
-      }
-      });
-    </script> {% endcomment %}
 
     <script src="{% static 'js/submitWithEnter.js' %}"></script>
     <script src="{% static 'js/scrollToBottom.js' %}"></script>
@@ -110,6 +106,9 @@
         const form = document.getElementById('send-message-form');
         form.addEventListener('submit', function(e) {
           e.preventDefault();
+          if (!form.reportValidity()) {
+            return;
+          }
           const formData = new FormData(form);
           fetch("{% url 'send_message_async' %}", {
             method: 'POST',

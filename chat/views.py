@@ -13,7 +13,7 @@ from django.http import JsonResponse
 # Create your views here.
 def home(request):
     chat_user = ChatUser.objects.get(user=request.user)
-    chats = Chat.objects.filter(users=chat_user)
+    chats = Chat.objects.filter(users=chat_user).exclude(usersExited=chat_user)
     add_chatForm = ChatForm(chat_user)
     return render(
         request,
@@ -157,6 +157,15 @@ def get_new_messages(request):
         }
     )
 
+def exit_chat(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chat_pk = int(request.POST.get("chat_pk"))
+    chat = Chat.objects.get(pk=chat_pk)
+    chat.usersExited.add(chat_user)
+    chat.save()
+    if chat.usersExited.count() == chat.users.count():
+        chat.delete()
+    return HTTPResponseRedirect(reverse("home"))
 
 class ChatUserLoginView(LoginView):
     def get_success_url(self):

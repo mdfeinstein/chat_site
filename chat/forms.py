@@ -1,4 +1,4 @@
-from chat.models import Chat, Message, ChatUser
+from chat.models import Chat, Message, ChatUser, FriendsList
 from django.forms import ModelForm
 from django import forms
 from django.contrib.auth import get_user_model
@@ -8,9 +8,9 @@ class ChatForm(ModelForm):
     def __init__(self, chat_user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.chat_user = chat_user
-        self.fields["users"].queryset = self.fields["users"].queryset.exclude(
-            pk=chat_user.pk
-        )
+        self.fields["users"].queryset = self.fields[
+            "users"
+        ].queryset.exclude(pk=chat_user.pk)
 
     def clean(self):
         cleaned_data = super().clean()
@@ -36,11 +36,37 @@ class MessageForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["text"].label = ""
-        self.fields["text"].widget.attrs.update({
-            "placeholder": "Type message here...",
-            "style": "width: 100%; box-sizing: border-box; max-height: 60px; overflow-y: auto;",
-        })
+        self.fields["text"].widget.attrs.update(
+            {
+                "placeholder": "Type message here...",
+                "class": "chat-textarea",
+            }
+        )
 
     class Meta:
         model = Message
         fields = ["text"]
+        widgets = {
+            "text": forms.Textarea(attrs={"rows": 1}),
+        }
+
+
+class RequestFriendsForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["users"].queryset = (
+            self.fields["users"]
+            .queryset.exclude(pk=self.instance.owner.pk)
+            .exclude(pk__in=self.instance.friends.all())
+            .exclude(pk__in=self.instance.requested_users.all())
+        )
+
+    users = forms.ModelMultipleChoiceField(
+        queryset=ChatUser.objects.all(),
+        widget=forms.SelectMultiple(attrs={"size": 10}),
+        label="Select Users",
+    )
+
+    class Meta:
+        model = FriendsList
+        fields = ["requested_users"]

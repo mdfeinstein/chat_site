@@ -31,4 +31,5 @@ urlpatterns = [
     path('send_message', chat.views.send_message, name='send_message'),
     path('send_message_async', chat.views.send_message_async, name='send_message_async'),
     path('get_new_messages', chat.views.get_new_messages, name='get_new_messages'),
+    path("exit_chat", chat.views.exit_chat, name="exit_chat"),
 ]
