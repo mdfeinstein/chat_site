@@ -1,0 +1,8 @@
+<ul>
+    {% for message in messages %}
+    <div class="message">
+        <li>{{message.sender}}: {{message.createdAt}}</li>
+          <br>{{ message.text }}</li>
+    </div>
+    {% endfor %}
+</ul>

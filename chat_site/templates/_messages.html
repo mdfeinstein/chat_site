@@ -1,0 +1,11 @@
+<ul>
+    {% for message in messages %}
+    <div class="message">
+        <li>{{message.sender}}: {{message.createdAt}}</li>
+          <br>{{ message.text }}</li>
+    </div>
+      {% if forloop.last %}
+    <span id="last-message-number" data-last-message-number="{{ message.message_number }}"></span>
+      {% endif %}
+    {% endfor %}
+</ul>

@@ -33,6 +33,14 @@ class ChatForm(ModelForm):
 
 
 class MessageForm(ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["text"].label = ""
+        self.fields["text"].widget.attrs.update({
+            "placeholder": "Type message here...",
+            "style": "width: 100%; box-sizing: border-box; max-height: 60px; overflow-y: auto;",
+        })
+
     class Meta:
         model = Message
         fields = ["text"]

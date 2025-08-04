@@ -6,6 +6,8 @@ from django.urls import reverse
 from django.contrib.auth.views import LoginView, LogoutView
 from chat.models import ChatUser, Chat, Message
 from chat.forms import ChatForm, MessageForm
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 
 
 # Create your views here.
@@ -85,7 +87,7 @@ def send_message(request):
                 chat=chat,
                 sender=chat_user,
                 text=request.POST.get("text"),
-                message_number=message_number
+                message_number=message_number,
             )
             message.save()
             chat.message_count = message_number + 1
@@ -96,9 +98,64 @@ def send_message(request):
             )
     else:
         return HTTPResponseRedirect(reverse("home"))
-    
+
+
+def send_message_async(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chats = Chat.objects.filter(users=chat_user)
+    chat_number = int(request.POST.get("chat_number"))
+    message_form = MessageForm(request.POST)
+    if chat_number is not None:
+        if chat_number < len(chats):
+            chat = chats[chat_number]
+            message_number = chat.message_count
+            message = Message(
+                chat=chat,
+                sender=chat_user,
+                text=request.POST.get("text"),
+                message_number=message_number,
+            )
+            message.save()
+            chat.message_count = message_number + 1
+            chat.save()
+    # respond with success
+    return JsonResponse({"success": True})
+
+
 def get_new_messages(request):
-    pass
+    chat_id = request.GET.get("chat_pk")
+    chat = Chat.objects.get(pk=chat_id)
+    # validate requesting user is in chat
+    chat_user = ChatUser.objects.get(user=request.user)
+    if chat_user not in chat.users.all():
+        return HTTPResponseRedirect(reverse("home"))
+    # get new messages
+    last_message_number = request.GET.get("last_message_number")
+    messages = Message.objects.filter(
+        chat=chat, message_number__gt=last_message_number
+    ).order_by("message_number")
+    # update last message number
+    last_message_number = (
+        messages.last().message_number
+        if messages.last()
+        else last_message_number
+    )
+    html = render_to_string(
+        "_new_messages.html", {"messages": messages}
+    )
+    new_message_this_user = False
+    for message in messages:
+        if message.sender == chat_user:
+            new_message_this_user = True
+            break
+    # render messages as html snippet using chat/message.html
+    return JsonResponse(
+        {
+            "html": html,
+            "last_message_number": last_message_number,
+            "new_message_this_user": new_message_this_user,
+        }
+    )
 
 
 class ChatUserLoginView(LoginView):

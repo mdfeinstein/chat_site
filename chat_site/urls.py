@@ -29,4 +29,6 @@ urlpatterns = [
     path('logout', chat.views.ChatUserLogoutView.as_view(template_name='logout.html'), name='logout'),
     path('add_chat', chat.views.add_chat, name='add_chat'),
     path('send_message', chat.views.send_message, name='send_message'),
+    path('send_message_async', chat.views.send_message_async, name='send_message_async'),
+    path('get_new_messages', chat.views.get_new_messages, name='get_new_messages'),
 ]
