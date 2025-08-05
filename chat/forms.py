@@ -52,16 +52,17 @@ class MessageForm(ModelForm):
 
 
 class RequestFriendsForm(ModelForm):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, owner, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["users"].queryset = (
-            self.fields["users"]
-            .queryset.exclude(pk=self.instance.owner.pk)
-            .exclude(pk__in=self.instance.friends.all())
-            .exclude(pk__in=self.instance.requested_users.all())
+        self.owner = owner
+        self.fields["requested_users"].queryset = (
+            self.fields["requested_users"]
+            .queryset.exclude(pk=self.owner.pk)
+            .exclude(pk__in=self.owner.friends_list.friends.all())
+            .exclude(pk__in=self.owner.friends_list.requested_users.all())
         )
 
-    users = forms.ModelMultipleChoiceField(
+    requested_users = forms.ModelMultipleChoiceField(
         queryset=ChatUser.objects.all(),
         widget=forms.SelectMultiple(attrs={"size": 10}),
         label="Select Users",

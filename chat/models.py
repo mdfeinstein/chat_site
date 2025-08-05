@@ -1,10 +1,15 @@
-from django.db import models, ValidationError
+from django.db import models
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User
+
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+
 
 # Create your models here.
 #add chat User which has a user, a loggedIn status, and an accountActive status
 class ChatUser(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='chat_user')
     loggedIn = models.BooleanField(default=False)
     accountActive = models.BooleanField(default=True)
 
@@ -34,11 +39,13 @@ class Message(models.Model):
     message_number = models.IntegerField(default=0)
 
 class FriendsList(models.Model):
-    owner = models.OneToOneField(ChatUser, on_delete=models.CASCADE)
+    owner = models.OneToOneField(ChatUser, on_delete=models.CASCADE, related_name='friends_list')
     friends = models.ManyToManyField(ChatUser, related_name='friends_of') 
     requested_users = models.ManyToManyField(ChatUser, related_name='requested_by')
 
     def __str__(self):
+        if self.pk is None:
+            return "No friends list"
         #comma separated list of users
         friends = ', '.join(f'{user}' for user in self.friends.all()) 
         requested_users = ', '.join(f'{user}' for user in self.requested_users.all()) 
@@ -46,6 +53,9 @@ class FriendsList(models.Model):
         return s
     
     def clean(self):
+        #check for pk
+        if self.pk is None:
+            return
         if self.owner in self.friends.all():
             raise ValidationError("You cannot add yourself as a friend.")
         if self.owner in self.requested_users.all():
@@ -55,6 +65,20 @@ class FriendsList(models.Model):
             raise ValidationError("You cannot request a user that is already a friend.")
         
     def save(self, *args, **kwargs):
-        self.full_clean()
+        self.full_clean(exclude=["friends", "requested_users"])
         super().save(*args, **kwargs)
 
+    def check_reciprocal_requests(self):
+        for user in self.requested_users.all():
+            if self.owner in user.friends_list.requested_users.all():
+                self.requested_users.remove(user)
+                self.friends.add(user)
+                user.friends_list.requested_users.remove(self.owner)
+                user.friends_list.friends.add(self.owner)
+                user.friends_list.save()
+                self.save()
+                
+@receiver(post_save, sender=ChatUser)
+def create_friends_list(sender, instance, created, **kwargs):
+    if created:
+        FriendsList.objects.create(owner=instance)

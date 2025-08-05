@@ -5,7 +5,7 @@ from django.http import (
 from django.urls import reverse
 from django.contrib.auth.views import LoginView, LogoutView
 from chat.models import ChatUser, Chat, Message
-from chat.forms import ChatForm, MessageForm
+from chat.forms import ChatForm, MessageForm, RequestFriendsForm
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 
@@ -15,10 +15,17 @@ def home(request):
     chat_user = ChatUser.objects.get(user=request.user)
     chats = Chat.objects.filter(users=chat_user).exclude(usersExited=chat_user)
     add_chatForm = ChatForm(chat_user)
+    friends_list = chat_user.friends_list
+    request_friends_form = RequestFriendsForm(chat_user)
     return render(
         request,
         "home.html",
-        {"chats": chats, "add_chatForm": add_chatForm},
+        {"chats": chats, 
+         "add_chatForm": add_chatForm,
+         "friends_list": friends_list,
+         "request_friends_form": request_friends_form,
+         "chat_user": chat_user,
+         },
     )
 
 
@@ -54,6 +61,7 @@ def chat(request):
                     "chat_number": chat_number,
                     "messages": messages,
                     "message_form": message_form,
+                    "friends_list": chat_user.friends_list,
                 },
             )
     else:
@@ -165,6 +173,20 @@ def exit_chat(request):
     chat.save()
     if chat.usersExited.count() == chat.users.count():
         chat.delete()
+    return HTTPResponseRedirect(reverse("home"))
+
+
+def request_friends(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    current_friends_list = chat_user.friends_list
+    request_friends_form = RequestFriendsForm(chat_user, request.POST, instance = current_friends_list)
+    if request_friends_form.is_valid():
+        new_requests = set(request_friends_form.cleaned_data["requested_users"])
+        old_requests = set(current_friends_list.requested_users.all())
+        current_friends_list.requested_users.set(new_requests | old_requests)
+        current_friends_list.save()
+        current_friends_list.check_reciprocal_requests()
+    
     return HTTPResponseRedirect(reverse("home"))
 
 class ChatUserLoginView(LoginView):

@@ -8,7 +8,29 @@
       {% else %}
         <span style="color: red; font-size: 1.2em;">&#9679;</span>
       {% endif %}
-      {{ friend }} |
+      |{{ friend }}
       </li>
     {% endfor %}
+  </ul>
+  <h3>Requested Friends</h3>
+  <ul>
+  {% for user in friends_list.requested_users.all %}
+    <li>
+    {{ user }}
+    </li>
+  {% endfor %}
+  </ul>
+  <h3>Invitations</h3>
+  <ul>
+    {% for friend_list in chat_user.requested_by.all %}
+        <li>
+        {{ friend_list.owner }}
+        </li>
+    {% endfor %}
+  <form method="post" action="{% url 'request_friends' %}">
+    {% csrf_token %}
+    {{ request_friends_form.as_p }}
+    <button type="submit">Request Friends</button>
+  </form>
+
 </div>
