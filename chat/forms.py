@@ -8,9 +8,8 @@ class ChatForm(ModelForm):
     def __init__(self, chat_user, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.chat_user = chat_user
-        self.fields["users"].queryset = self.fields[
-            "users"
-        ].queryset.exclude(pk=chat_user.pk)
+        friends = self.chat_user.friends_list.friends.all()
+        self.fields["users"].queryset = friends
 
     def clean(self):
         cleaned_data = super().clean()

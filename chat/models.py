@@ -32,12 +32,13 @@ class Chat(models.Model):
         return self.__str__()
 
 class Message(models.Model):
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name="messages")
     sender = models.ForeignKey(ChatUser, on_delete=models.CASCADE)
     text = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)
     message_number = models.IntegerField(default=0)
 
+        
 class FriendsList(models.Model):
     owner = models.OneToOneField(ChatUser, on_delete=models.CASCADE, related_name='friends_list')
     friends = models.ManyToManyField(ChatUser, related_name='friends_of') 
@@ -70,12 +71,13 @@ class FriendsList(models.Model):
 
     def check_reciprocal_requests(self):
         for user in self.requested_users.all():
+            their_friendslist = user.friends_list
             if self.owner in user.friends_list.requested_users.all():
                 self.requested_users.remove(user)
                 self.friends.add(user)
-                user.friends_list.requested_users.remove(self.owner)
-                user.friends_list.friends.add(self.owner)
-                user.friends_list.save()
+                their_friendslist.requested_users.remove(self.owner)
+                their_friendslist.friends.add(self.owner)
+                their_friendslist.save()
                 self.save()
                 
 @receiver(post_save, sender=ChatUser)

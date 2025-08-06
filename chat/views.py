@@ -71,14 +71,10 @@ def chat(request):
 def add_chat(request):
     if request.method == "POST":
         chat_user = ChatUser.objects.get(user=request.user)
-        print((request.POST))
         form = ChatForm(chat_user, request.POST)
-        print(form)
         if form.is_valid():
             chat = form.save()
-            # print("chat added with users: ", chat.users.all())
-        else:
-            print("form not valid")
+
     return HTTPResponseRedirect(reverse("home"))
 
 
@@ -177,7 +173,7 @@ def exit_chat(request):
 
 
 def request_friends(request):
-    chat_user = ChatUser.objects.get(user=request.user)
+    chat_user = ChatUser.objects.get(user__pk=request.user.pk)
     current_friends_list = chat_user.friends_list
     request_friends_form = RequestFriendsForm(chat_user, request.POST, instance = current_friends_list)
     if request_friends_form.is_valid():
@@ -192,21 +188,25 @@ def request_friends(request):
 class ChatUserLoginView(LoginView):
     def get_success_url(self):
         return reverse("home")
-
     def form_valid(self, form):
         response = super().form_valid(form)
-        user = self.request.user
-        chatUser = ChatUser.objects.get(user=user)
-        chatUser.loggedIn = True
-        chatUser.save()
+        if self.request.user.is_authenticated:
+            chatUser = ChatUser.objects.get(user=self.request.user)
+            chatUser.loggedIn = True
+            chatUser.save()
+        
+        return response
+    
+    def form_invalid(self, form):
+        response = super().form_invalid(form)
         return response
 
 
 class ChatUserLogoutView(LogoutView):
-    def form_valid(self, form):
-        response = super().form_valid(form)
-        user = self.request.user
-        chatUser = ChatUser.objects.get(user=user)
-        chatUser.loggedIn = False
-        chatUser.save()
-        return response
+
+    def post(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            chatUser = ChatUser.objects.get(user=request.user)
+            chatUser.loggedIn = False
+            chatUser.save()
+        return super().post(request, *args, **kwargs)
