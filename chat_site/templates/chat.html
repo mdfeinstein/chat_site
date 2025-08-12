@@ -1,10 +1,20 @@
 {% load static %}
+{% load django_vite %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
+        <script type="module">
+      import RefreshRuntime from 'http://localhost:5173/@react-refresh'
+      RefreshRuntime.injectIntoGlobalHook(window)
+      window.$RefreshReg$ = () => {}
+      window.$RefreshSig$ = () => (type) => type
+      window.__vite_plugin_react_preamble_installed__ = true
+  </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat - ChitChat</title>
+    {% vite_hmr_client %}
+    {% vite_asset 'src/main.tsx' %}
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
         .topbar-container {
@@ -41,7 +51,7 @@
         button { padding: 0.6rem; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
         button:hover { background: #357abd; }
         
-        #send-message-form { 
+        {% comment %} #send-message-form { 
           display: flex;
           flex-direction: row;
           width: 80%;
@@ -59,7 +69,7 @@
           flex: 0 0 20%;
           height: 100%;
           box-sizing: border-box;
-          }
+          } {% endcomment %}
 
 
 </style>
@@ -78,60 +88,34 @@
         <button type="submit" style="align-self: right;">Logout</button>
       </form>
     </div>
-    <div class="chat-container" id="chat-container">
+    
+    <div 
+      class="chat-container" 
+      id="chat-container"
+      data-get-new-messages-url="{% url 'get_new_messages' %}"
+      data-chat-id="{{ chat.pk }}"
+    >
         {% include '_messages.html' %}
     </div>
 
-      <form id="send-message-form" method="post" action="{% url 'send_message' %}">
+    <div
+      id="react-message-form"
+      data-url="{% url 'send_message_async' %}"
+      data-chat-id="{{ chat_number }}"
+      style="width: 100%; max-width: 90vw; margin-top: 0.5rem;"
+    >
         {% csrf_token %}
-          <textarea class="chat-textarea" name="text"
-           placeholder="Type message here..."
-           required></textarea>
-          <input type="hidden" name="chat_number" value="{{chat_number}}">
-          <button class="send-message-button" type="submit">Send Message</button>
-      </form>
+    </div>
 
-    <script src="{% static 'js/submitWithEnter.js' %}"></script>
+
     <script src="{% static 'js/scrollToBottom.js' %}"></script>
     <script>
-
-      submitWithEnterListener('send-message-form', 'input[type="text"], textarea');
       document.addEventListener("DOMContentLoaded", function() {
         scrollToBottom('chat-container');
       });
     </script>
 
-<script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('send-message-form');
-        form.addEventListener('submit', function(e) {
-          e.preventDefault();
-          if (!form.reportValidity()) {
-            return;
-          }
-          const formData = new FormData(form);
-          fetch("{% url 'send_message_async' %}", {
-            method: 'POST',
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest',
-              'X-CSRFToken': form.querySelector('[name=csrfmiddlewaretoken]').value
-            },
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.success) {
-              form.reset();
-            }
-            else {
-              alert('An error occurred.');
-            }
-          });
-        });
-      });
-    </script>
-
-    <script>
+    {% comment %} <script>
         let lastMessageNumber = document.getElementById("last-message-number").dataset.lastMessageNumber;
 
         function fetchNewMessages() {
@@ -157,4 +141,6 @@
 
 
         fetchNewMessages();
-      </script>
+      </script> {% endcomment %}
+    </body>
+  </html>

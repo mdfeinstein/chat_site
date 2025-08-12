@@ -3,12 +3,17 @@ import React, { useState } from "react";
 interface SendMessageButtonProps {
   sendMessageUrl: string;
   chatId: string | number;
-  message: string;
 }
 
-const SendMessageButton: React.FC<SendMessageButtonProps> = ({ sendMessageUrl, chatId, message }) => {
+const SendMessageButton: React.FC<SendMessageButtonProps> = () => {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
+  // const csrfToken = (document.querySelector('input[name="csrfmiddlewaretoken"]') as HTMLInputElement)?.value;
+  const mountNode = document.getElementById('react-send-message')!;
+  const form = mountNode.closest('form')!;
+  const textarea = form.querySelector('textarea[name="text"]') as HTMLTextAreaElement;
+  const message = textarea.value;
+
 
   const handleClick = async () => {
     setErrorMsg("");
@@ -20,14 +25,7 @@ const SendMessageButton: React.FC<SendMessageButtonProps> = ({ sendMessageUrl, c
 
     setLoading(true);
     try {
-      const response = await fetch(sendMessageUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ chatId, message })
-      });
-
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-
+      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       // You can add additional success handling here
     } catch (err) {
       console.error(err);

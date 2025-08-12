@@ -13,19 +13,22 @@ from django.http import JsonResponse
 # Create your views here.
 def home(request):
     chat_user = ChatUser.objects.get(user=request.user)
-    chats = Chat.objects.filter(users=chat_user).exclude(usersExited=chat_user)
+    chats = Chat.objects.filter(users=chat_user).exclude(
+        usersExited=chat_user
+    )
     add_chatForm = ChatForm(chat_user)
     friends_list = chat_user.friends_list
     request_friends_form = RequestFriendsForm(chat_user)
     return render(
         request,
         "home.html",
-        {"chats": chats, 
-         "add_chatForm": add_chatForm,
-         "friends_list": friends_list,
-         "request_friends_form": request_friends_form,
-         "chat_user": chat_user,
-         },
+        {
+            "chats": chats,
+            "add_chatForm": add_chatForm,
+            "friends_list": friends_list,
+            "request_friends_form": request_friends_form,
+            "chat_user": chat_user,
+        },
     )
 
 
@@ -134,7 +137,7 @@ def get_new_messages(request):
     if chat_user not in chat.users.all():
         return HTTPResponseRedirect(reverse("home"))
     # get new messages
-    last_message_number = request.GET.get("last_message_number")
+    last_message_number = int(request.GET.get("last_message_number"))
     messages = Message.objects.filter(
         chat=chat, message_number__gt=last_message_number
     ).order_by("message_number")
@@ -144,22 +147,29 @@ def get_new_messages(request):
         if messages.last()
         else last_message_number
     )
-    html = render_to_string(
-        "_new_messages.html", {"messages": messages}
-    )
     new_message_this_user = False
+    message_dicts : list[dict] = []
+    
+    print(messages.last())
     for message in messages:
+        message_dict = {}
         if message.sender == chat_user:
             new_message_this_user = True
-            break
-    # render messages as html snippet using chat/message.html
+        message_dict["id"] = message.id
+        message_dict["sender"] = message.sender.user.username
+        message_dict["created_at"] = message.createdAt
+        message_dict["text"] = message.text
+        message_dict["message_number"] = message.message_number
+        message_dicts.append(message_dict)
+
     return JsonResponse(
         {
-            "html": html,
+            "messages": message_dicts,
             "last_message_number": last_message_number,
             "new_message_this_user": new_message_this_user,
         }
     )
+
 
 def exit_chat(request):
     chat_user = ChatUser.objects.get(user=request.user)
@@ -175,28 +185,36 @@ def exit_chat(request):
 def request_friends(request):
     chat_user = ChatUser.objects.get(user__pk=request.user.pk)
     current_friends_list = chat_user.friends_list
-    request_friends_form = RequestFriendsForm(chat_user, request.POST, instance = current_friends_list)
+    request_friends_form = RequestFriendsForm(
+        chat_user, request.POST, instance=current_friends_list
+    )
     if request_friends_form.is_valid():
-        new_requests = set(request_friends_form.cleaned_data["requested_users"])
+        new_requests = set(
+            request_friends_form.cleaned_data["requested_users"]
+        )
         old_requests = set(current_friends_list.requested_users.all())
-        current_friends_list.requested_users.set(new_requests | old_requests)
+        current_friends_list.requested_users.set(
+            new_requests | old_requests
+        )
         current_friends_list.save()
         current_friends_list.check_reciprocal_requests()
-    
+
     return HTTPResponseRedirect(reverse("home"))
+
 
 class ChatUserLoginView(LoginView):
     def get_success_url(self):
         return reverse("home")
+
     def form_valid(self, form):
         response = super().form_valid(form)
         if self.request.user.is_authenticated:
             chatUser = ChatUser.objects.get(user=self.request.user)
             chatUser.loggedIn = True
             chatUser.save()
-        
+
         return response
-    
+
     def form_invalid(self, form):
         response = super().form_invalid(form)
         return response

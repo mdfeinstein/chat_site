@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_vite',
     'chat.apps.ChatConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -119,9 +121,24 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / "chat_site" / "static",
+                    BASE_DIR / "chat_site" / "static" / "frontend",
+                    BASE_DIR / "chat_site" / "static" / "frontend"/ "assets",
+                    BASE_DIR / "frontend" / "dist",
+                    BASE_DIR / "frontend"
                     ] 
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Django Vite settings
+DJANGO_VITE = {
+    "default": {
+        "dev_mode": DEBUG,  # Use development server when DEBUG=True
+        "dev_server_port": 5173,  # Default Vite port
+        "dev_server_host": "localhost",
+        "manifest_path": os.path.join(BASE_DIR, "frontend", "dist", ".vite", "manifest.json"),
+        "static_url_prefix": "/",
+    }
+}

@@ -3,9 +3,7 @@
     <div class="message">
         <li>{{message.sender}}: {{message.createdAt}}</li>
           <br>{{ message.text|linebreaksbr }}</li>
-    </div>
-      {% if forloop.last %}
-    <span id="last-message-number" data-last-message-number="{{ message.message_number }}"></span>
-      {% endif %}
+          <span id="message-number" data-message-number="{{ message.message_number }}"></span>
+        </div>
     {% endfor %}
 </ul>
