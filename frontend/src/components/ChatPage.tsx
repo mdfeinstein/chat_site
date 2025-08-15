@@ -6,6 +6,7 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
+// import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 
 interface ChatPageProps {
   chatName: string;
@@ -20,6 +21,18 @@ interface ChatPageProps {
   getFriendInfoUrl: string;
   csrfToken: string;
 }
+
+
+
+// const ArrowedMarginTab: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
+//     return (
+//       <Box
+//       >
+//         {isCollapsed? <IconArrowRight/>: <IconArrowLeft/>}
+
+//       </Box>
+//     );
+//   }
 
 const ChatPage: React.FC<ChatPageProps> = ({
   chatName,
@@ -38,6 +51,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const toggleNavBar = () => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
+
+
 
   return (
     <Box
@@ -68,6 +83,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
         />
+        
       </Box>
 
       <Box

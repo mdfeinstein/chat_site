@@ -21,6 +21,8 @@ import {
   Burger,
 } from "@mantine/core";
 import { get } from "http";
+import FriendsSection from "./FriendsSection";
+import ChatsSection from "./ChatsSection";
 
 interface ChatData {
   id: number;
@@ -60,7 +62,7 @@ const CollapsibleNavBar = ({
   getChatsUrl: string;
   getFriendInfoUrl: string;
 }) => {
-  
+
   const getChatsData = async () => {
     const response = await fetch(getChatsUrl);
     const data = await response.json();
@@ -74,22 +76,22 @@ const CollapsibleNavBar = ({
   };
 
   const [section, setSection] = useState<"Chats" | "Friends">("Chats");
-  const [chatData, setChatData] = useState<ChatData[]>();
-  const [friendData, setFriendData] = useState<FriendData[]>();
-  
+  const [chatData, setChatData] = useState<ChatData[]>([]);
+  const [friendData, setFriendData] = useState<FriendData[]>([]);
+
+  const chatsElement = <ChatsSection chatData={chatData!} />;
+  const friendsElement = <FriendsSection friendData={friendData!} />;
   useEffect(() => {
     getChatsData();
-    getFriendsData();
+  }, []);
+  useEffect(() => {
+    getFriendsData(); 
   }, []);
 
   // Generate links based on the selected section
   const data = section === "Chats" ? chatData : friendData;
-  let sectionalElement : JSX.Element | null = null;
-  if (section === "Chats") {
-    sectionalElement = <ChatsSection chatData={chatData} />;
-  } else if (section === "Friends") {
-    sectionalElement = <FriendsSection friendData={friendData} />;
-  }
+  // const chatsElement = <ChatsSection chatData={chatData!} />;
+  // const friendsElement = <FriendsSection friendData={friendData!} />;
 
 
   const links = data?.map((item) => (
@@ -131,7 +133,7 @@ const CollapsibleNavBar = ({
       </Box>
 
       <Box style={{ flex: 1 }}>
-        <Stack>{links}</Stack>
+        <Stack>{section === "Chats" ? chatsElement : friendsElement}</Stack>
       </Box>
 
       <Box mt="auto" pt={20}>

@@ -210,9 +210,9 @@ def get_chats(request):
         chat_dict["name"] = str(chat)
         chat_dict["link"] = reverse("chat") + "?chat_number=" + str(chat.pk)
         last_message = chat.messages.order_by("message_number").last()
-        chat_dict["lastMessage"] = last_message.text
-        chat_dict["lastMessageAuthor"] = last_message.sender.user.username
-        chat_dict["lastMessageDate"] = last_message.createdAt.isoformat()
+        chat_dict["lastMessage"] = last_message.text if last_message is not None else "" 
+        chat_dict["lastMessageAuthor"] = last_message.sender.user.username if last_message is not None else ""
+        chat_dict["lastMessageDate"] = last_message.createdAt.isoformat() if last_message is not None else ""
         chat_dicts.append(chat_dict)
     
     print(chat_dicts)
