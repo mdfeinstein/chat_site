@@ -1,9 +1,11 @@
-<ul>
-    {% for message in messages %}
-    <div class="message">
-        <li>{{message.sender}}: {{message.createdAt}}</li>
-          <br>{{ message.text|linebreaksbr }}</li>
-          <span id="message-number" data-message-number="{{ message.message_number }}"></span>
-        </div>
-    {% endfor %}
-</ul>
+{% for message in messages %}
+<div 
+id="message-number-{{message.message_number}}" 
+class="message"
+data-message-number="{{ message.message_number }}"
+data-sender="{{ message.sender }}"
+data-created-at="{{ message.createdAt|date:'c' }}"
+data-text="{{ message.text }}"
+>
+</div>
+{% endfor %}

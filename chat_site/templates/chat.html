@@ -3,7 +3,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-        <script type="module">
+  <script src="http://localhost:8097"></script>
+  <script type="module">
       import RefreshRuntime from 'http://localhost:5173/@react-refresh'
       RefreshRuntime.injectIntoGlobalHook(window)
       window.$RefreshReg$ = () => {}
@@ -16,77 +17,19 @@
     {% vite_hmr_client %}
     {% vite_asset 'src/main.tsx' %}
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .topbar-container {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            justify-content: space-between;
-            width: 100vw;
-            height: 10vh;
-            min-height: 50px;
-            max-height: 100px;
-            background: #e9e9f0;
-            padding: 0 2rem;
-            box-sizing: border-box;
-            margin-bottom: 1rem;
-        }
-        .topbar-container button {
-            margin: 0 0.5rem;
-        }
-        .chat-container {
-            background: #fff;
-            padding: 2rem 2.5rem;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            height: 70vh;
-            min-width: 70vw;
-            max-width: 100vw;
-            overflow-y: auto;
-        }
-        h2 { margin-bottom: 1.5rem; color: #333; }
-        form { display: flex; flex-direction: column; }
-        label { margin-bottom: 0.5rem; color: #555; }
-        input[type="text"], input[type="password"] { padding: 0.5rem; margin-bottom: 1rem; border: 1px solid #ccc; border-radius: 4px; }
-        button { padding: 0.6rem; background: #4a90e2; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-        button:hover { background: #357abd; }
-        
-        {% comment %} #send-message-form { 
-          display: flex;
-          flex-direction: row;
-          width: 80%;
-          height: 100px;
-          box-sizing: border-box;
-          }
-
-          .chat-textarea {
-          flex: 0 0 80%;
-          height: 100%;
-          box-sizing: border-box;
-          }
-
-        .send-message-button {
-          flex: 0 0 20%;
-          height: 100%;
-          box-sizing: border-box;
-          } {% endcomment %}
-
-
-</style>
+        {% comment %} body {  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } {% endcomment %}
+    </style>
 </head>
 <body>
-    <div class="topbar-container">
-      <button onclick="window.location.href='{% url 'home' %}'">Home</button>
-              <h2>Chat with {{ chat }}</h2>
-      <form method="post" action="{% url 'exit_chat' %}">
-        {% csrf_token %}
-        <input type="hidden" name="chat_pk" value="{{chat.pk}}">
-        <button type="submit" style="align-self: right;">Exit Chat</button>
-      </form>
-      <form method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit" style="align-self: right;">Logout</button>
-      </form>
+    {% comment %} <div 
+      id="react-topbar"
+      data-chat-name="{{ chat }}"
+      data-chat-id="{{ chat.pk }}"
+      data-home-url="{% url 'home' %}"
+      data-exit-chat-url="{% url 'exit_chat' %}"
+      data-logout-url="{% url 'logout' %}"
+    >
+      {% csrf_token %}
     </div>
     
     <div 
@@ -102,45 +45,27 @@
       id="react-message-form"
       data-url="{% url 'send_message_async' %}"
       data-chat-id="{{ chat_number }}"
-      style="width: 100%; max-width: 90vw; margin-top: 0.5rem;"
     >
         {% csrf_token %}
+    </div> {% endcomment %}
+
+    {% csrf_token %}
+    <div 
+      id="react-chat-page"
+      data-chat-name="{{ chat }}"
+      data-chat-id="{{ chat.pk }}"
+      data-home-url="{% url 'home' %}"
+      data-exit-chat-url="{% url 'exit_chat' %}"
+      data-logout-url="{% url 'logout' %}"
+      data-get-new-messages-url="{% url 'get_new_messages' %}"
+      data-send-message-url="{% url 'send_message_async' %}"
+      data-csrf-token = "{{ csrf_token }}"
+      data-get-chats-url="{% url 'get_chats' %}"
+      data-get-friend-info-url="{% url 'get_friend_info' %}"
+    >
+      {% include '_messages.html' %}
     </div>
 
 
-    <script src="{% static 'js/scrollToBottom.js' %}"></script>
-    <script>
-      document.addEventListener("DOMContentLoaded", function() {
-        scrollToBottom('chat-container');
-      });
-    </script>
-
-    {% comment %} <script>
-        let lastMessageNumber = document.getElementById("last-message-number").dataset.lastMessageNumber;
-
-        function fetchNewMessages() {
-          fetch("{% url 'get_new_messages' %}?chat_pk={{chat.pk}}&last_message_number=" + lastMessageNumber)
-            .then(response => response.json())
-            .then(data => {
-              if (data.last_message_number != lastMessageNumber) { 
-                document.getElementById("chat-container").insertAdjacentHTML('beforeend', data.html);
-                lastMessageNumber = data.last_message_number;
-                document.getElementById("last-message-number").dataset.lastMessageNumber = lastMessageNumber;
-                if (data.new_message_this_user) {
-                  scrollToBottom('chat-container');
-                }
-                return data;
-              }
-            }
-            )
-            .finally(() => {
-              setTimeout(fetchNewMessages, 200);
-              
-            });
-        }
-
-
-        fetchNewMessages();
-      </script> {% endcomment %}
     </body>
   </html>

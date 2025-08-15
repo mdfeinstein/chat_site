@@ -51,6 +51,7 @@ def chat(request):
     chat_user = ChatUser.objects.get(user=request.user)
     chats = Chat.objects.filter(users=chat_user)
     chat_number = int(request.GET.get("chat_number"))
+    # chat_id = int(request.GET.get("chat_id"))
     message_form = MessageForm()
     if chat_number is not None:
         if chat_number < len(chats):
@@ -108,23 +109,21 @@ def send_message(request):
 
 
 def send_message_async(request):
+    chat_id = request.POST.get("chat_id")
     chat_user = ChatUser.objects.get(user=request.user)
-    chats = Chat.objects.filter(users=chat_user)
-    chat_number = int(request.POST.get("chat_number"))
-    message_form = MessageForm(request.POST)
-    if chat_number is not None:
-        if chat_number < len(chats):
-            chat = chats[chat_number]
-            message_number = chat.message_count
-            message = Message(
-                chat=chat,
-                sender=chat_user,
-                text=request.POST.get("text"),
-                message_number=message_number,
-            )
-            message.save()
-            chat.message_count = message_number + 1
-            chat.save()
+    chat = Chat.objects.filter(users=chat_user).get(pk=chat_id)
+    # chat_number = int(request.POST.get("chat_number"))
+    if chat is not None:
+        message_number = chat.message_count
+        message = Message(
+            chat=chat,
+            sender=chat_user,
+            text=request.POST.get("text"),
+            message_number=message_number,
+        )
+        message.save()
+        chat.message_count = message_number + 1
+        chat.save()
     # respond with success
     return JsonResponse({"success": True})
 
@@ -201,6 +200,52 @@ def request_friends(request):
 
     return HTTPResponseRedirect(reverse("home"))
 
+def get_chats(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chats = Chat.objects.filter(users=chat_user)
+    chat_dicts = []
+    for chat in chats:
+        chat_dict = {}
+        chat_dict["id"] = chat.pk
+        chat_dict["name"] = str(chat)
+        chat_dict["link"] = reverse("chat") + "?chat_number=" + str(chat.pk)
+        last_message = chat.messages.order_by("message_number").last()
+        chat_dict["lastMessage"] = last_message.text
+        chat_dict["lastMessageAuthor"] = last_message.sender.user.username
+        chat_dict["lastMessageDate"] = last_message.createdAt.isoformat()
+        chat_dicts.append(chat_dict)
+    
+    print(chat_dicts)
+    
+    return JsonResponse(chat_dicts, safe=False)
+
+def get_friend_info(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    friend_list = chat_user.friends_list
+    friend_dicts = []
+    for friend in friend_list.friends.all():
+        friend_dict = {}
+        friend_dict["status"] = "friend"
+        friend_dict["name"] = friend.user.username
+        friend_dict["online"] = friend.loggedIn
+        friend_dicts.append(friend_dict)
+
+    for friend in friend_list.requested_users.all():
+        friend_dict = {}
+        friend_dict["status"] = "requestedByUser"
+        friend_dict["name"] = friend.user.username
+        friend_dict["online"] = friend.loggedIn
+        friend_dicts.append(friend_dict)
+    #filter and find incoming requests
+    invited_by_lists = chat_user.requested_by.all()
+    for invited_by_list in invited_by_lists:
+        friend_dict = {}
+        friend_dict["status"] = "requestedByOther"
+        friend_dict["name"] = invited_by_list.owner.username
+        friend_dict["online"] = invited_by_list.owner.loggedIn
+        friend_dicts.append(friend_dict)
+
+    return JsonResponse(friend_dicts, safe=False)
 
 class ChatUserLoginView(LoginView):
     def get_success_url(self):

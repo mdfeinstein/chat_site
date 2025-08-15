@@ -58,7 +58,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessageUrl, chatI
     try {
       const formData = new FormData();
       formData.append('text', message);
-      formData.append('chat_number', chatId.toString());
+      formData.append('chat_id', chatId.toString());
 
       const response = await fetch(sendMessageUrl, {
         method: 'POST',
@@ -95,7 +95,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessageUrl, chatI
           display: 'flex',
           flexDirection: 'row',
           width: '100%',
-          height: '100px',
+          height: '100%',
           boxSizing: 'border-box',
           position: 'relative', // Add relative positioning for absolute popup
         }}
@@ -117,7 +117,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ sendMessageUrl, chatI
           input: { height: '100%', resize: 'none', fontSize: '25px' } // Set your desired font size here
         }}
       />
-      <input type="hidden" name="chat_number" value={chatId.toString()} />
+      <input type="hidden" name="chat_id" value={chatId.toString()} />
         <Button
           type="submit"
           loading={isLoading}
