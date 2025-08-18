@@ -24,13 +24,16 @@ import { get } from "http";
 import FriendsSection from "./FriendsSection";
 import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { ActionIcon } from "@mantine/core";
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;
   collapser: () => void;
 }> = ({ isCollapsed, collapser }) => {
   return (
-    <Box
+    <ActionIcon
+      
+      color="red"
       onClick={collapser}
       style={{
         position: "absolute",
@@ -38,16 +41,23 @@ const ArrowedMarginTab: React.FC<{
         // top: "50%",
         width: "40px",
         height: "100%",
-        backgroundColor: "#f5f5f5",
-        zIndex: 2,
+        // backgroundColor: "#ff8d8dff",
+        zIndex: 1,
         display: "flex",
+        flexDirection : "column",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
       }}
+
     >
-      {isCollapsed ? <IconArrowRight /> : <IconArrowLeft />}
-    </Box>
+      <ActionIcon
+      color="#fe0000ff"
+      >
+        {isCollapsed ? <IconArrowRight /> : <IconArrowLeft />}
+      </ActionIcon>
+      
+    </ActionIcon>
   );
 };
 

@@ -32,12 +32,16 @@ const ChatsSection = ({ chatData }: { chatData: ChatData[] }) => {
       <Stack>
         {chatData.map((chat) => (
           <Paper
+            onClick={() => window.location.href = chat.link}
             key={chat.id}
             shadow="xl"
             p="md"
             withBorder
             radius="lg"
             mb="0rem"
+            style ={{
+              cursor: "pointer",
+            }}
           >
             <Text fw={700} fz="md" c="red.8" mb="0.5rem">
               {chat.name}
