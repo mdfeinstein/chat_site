@@ -23,6 +23,33 @@ import {
 import { get } from "http";
 import FriendsSection from "./FriendsSection";
 import ChatsSection from "./ChatsSection";
+import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+
+const ArrowedMarginTab: React.FC<{
+  isCollapsed: boolean;
+  collapser: () => void;
+}> = ({ isCollapsed, collapser }) => {
+  return (
+    <Box
+      onClick={collapser}
+      style={{
+        position: "absolute",
+        right: 0,
+        // top: "50%",
+        width: "40px",
+        height: "100%",
+        backgroundColor: "#f5f5f5",
+        zIndex: 2,
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        cursor: "pointer",
+      }}
+    >
+      {isCollapsed ? <IconArrowRight /> : <IconArrowLeft />}
+    </Box>
+  );
+};
 
 interface ChatData {
   id: number;
@@ -54,15 +81,16 @@ const generalData = [
 ];
 
 const CollapsibleNavBar = ({
+  isCollapsed,
   collapser,
   getChatsUrl,
   getFriendInfoUrl,
 }: {
+  isCollapsed: boolean;
   collapser: () => void;
   getChatsUrl: string;
   getFriendInfoUrl: string;
 }) => {
-
   const getChatsData = async () => {
     const response = await fetch(getChatsUrl);
     const data = await response.json();
@@ -85,14 +113,13 @@ const CollapsibleNavBar = ({
     getChatsData();
   }, []);
   useEffect(() => {
-    getFriendsData(); 
+    getFriendsData();
   }, []);
 
   // Generate links based on the selected section
   const data = section === "Chats" ? chatData : friendData;
   // const chatsElement = <ChatsSection chatData={chatData!} />;
   // const friendsElement = <FriendsSection friendData={friendData!} />;
-
 
   const links = data?.map((item) => (
     <NavLink
@@ -105,53 +132,56 @@ const CollapsibleNavBar = ({
   ));
 
   return (
-    <Box
-      // component="nav"
-      onMouseEnter={collapser}
-      onMouseLeave={collapser}
-      // onHoverEnd={collapser}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        height: "100%",
-        // width: '100%',
-        // padding: '16px',
-        borderRight: "1px solid #e9ecef",
-      }}
-    >
-      <Box mb={20}>
-        <SegmentedControl
-          value={section}
-          onChange={(value) => setSection(value as "Chats" | "Friends")}
-          transitionTimingFunction="ease"
-          fullWidth
-          data={[
-            { label: "Chats", value: "Chats" },
-            { label: "Friends", value: "Friends" },
-          ]}
-        />
-      </Box>
-
-      <Box style={{ flex: 1 }}>
-        <Stack>{section === "Chats" ? chatsElement : friendsElement}</Stack>
-      </Box>
-
-      <Box mt="auto" pt={20}>
-        <Stack gap="xs">
-          <NavLink
-            label="Change account"
-            component="a"
-            href="#"
-            onClick={(event) => event.preventDefault()}
+    <Box style={{ display: "flex", flexDirection: "row" }}>
+      <Box
+        // component="nav"
+        // onMouseEnter={collapser}
+        // onMouseLeave={collapser}
+        // onHoverEnd={collapser}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          width: "calc(100% - 40px)",
+          // padding: '16px',
+          borderRight: "1px solid #e9ecef",
+        }}
+      >
+        <Box mb={20}>
+          <SegmentedControl
+            value={section}
+            onChange={(value) => setSection(value as "Chats" | "Friends")}
+            transitionTimingFunction="ease"
+            fullWidth
+            data={[
+              { label: "Chats", value: "Chats" },
+              { label: "Friends", value: "Friends" },
+            ]}
           />
-          <NavLink
-            label="Logout"
-            component="a"
-            href="#"
-            onClick={(event) => event.preventDefault()}
-          />
-        </Stack>
+        </Box>
+
+        <Box style={{ flex: 1 }}>
+          <Stack>{section === "Chats" ? chatsElement : friendsElement}</Stack>
+        </Box>
+
+        <Box mt="auto" pt={20}>
+          <Stack gap="xs">
+            <NavLink
+              label="Change account"
+              component="a"
+              href="#"
+              onClick={(event) => event.preventDefault()}
+            />
+            <NavLink
+              label="Logout"
+              component="a"
+              href="#"
+              onClick={(event) => event.preventDefault()}
+            />
+          </Stack>
+        </Box>
       </Box>
+      <ArrowedMarginTab isCollapsed={isCollapsed} collapser={collapser} />
     </Box>
   );
 };

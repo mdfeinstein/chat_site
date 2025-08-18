@@ -6,7 +6,7 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-// import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
+import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 
 interface ChatPageProps {
   chatName: string;
@@ -22,17 +22,6 @@ interface ChatPageProps {
   csrfToken: string;
 }
 
-
-
-// const ArrowedMarginTab: React.FC<{ isCollapsed: boolean }> = ({ isCollapsed }) => {
-//     return (
-//       <Box
-//       >
-//         {isCollapsed? <IconArrowRight/>: <IconArrowLeft/>}
-
-//       </Box>
-//     );
-//   }
 
 const ChatPage: React.FC<ChatPageProps> = ({
   chatName,
@@ -73,26 +62,26 @@ const ChatPage: React.FC<ChatPageProps> = ({
           position: "absolute",
           transition: "width 0.5s ease",
           zIndex: 1,
-          width: isNavBarCollapsed ? "5%" : "40%",
+          width: isNavBarCollapsed ? "20%" : "60%",
           height: "100%",
           backgroundColor: "#f5f5f5",
+          
         }}
       >
         <CollapsibleNavBar
+          isCollapsed={isNavBarCollapsed}
           collapser={toggleNavBar}
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
         />
-        
-      </Box>
-
+        </Box>
       <Box
         style={{
           // display: 'flex',
           // flexDirection: 'column',
           position: "absolute",
           right: 0,
-          width: "95%",
+          width: "80%",
           height: "100%",
           overflow: "hidden",
           margin: 0,

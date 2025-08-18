@@ -154,6 +154,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         position: 'fixed',
         bottom: "20%",
         right: "10%",
+        // opacity: isScrolledToBottom() ? 0 : 1
       }}
       />
 
