@@ -30,9 +30,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
     initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0
   );
-  // const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
-  
-  // const runFetchRef=useRef<boolean>(false);
+
   const lastMessageNumberRef=useRef<number>(lastMessageNumber);
   useEffect(()=>{
     lastMessageNumberRef.current=lastMessageNumber;
@@ -150,6 +148,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       style={{
         padding: '0rem',
         margin: '0 auto',
+        cursor: initialMessagesLoaded ? "default" : "wait",
       }}
     >
       <Stack

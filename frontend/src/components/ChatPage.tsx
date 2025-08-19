@@ -83,6 +83,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         overflow: "hidden",
         margin: 0,
         padding: 0,
+        cursor: initialMessagesLoaded ? "default" : "wait",
       }}
     >
       <Box

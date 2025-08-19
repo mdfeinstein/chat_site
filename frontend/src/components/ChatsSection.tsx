@@ -2,6 +2,7 @@ import { Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import React from "react";
 
+
 interface ChatData {
   id: number;
   name: string;
@@ -35,11 +36,14 @@ const ChatsSection = ({
   setChatDetailsFunc,
   selectedChatId,
 }: ChatsSectionProps) => {
+  const [hoveredChatId, setHoveredChatId]=useState<number|null>(null);
   return (
     <ScrollArea>
       <Stack>
         {chatData.map((chat) => (
           <Paper
+            onMouseEnter={() => setHoveredChatId(chat.id)}
+            onMouseLeave={() => setHoveredChatId(null)}
             onClick={setChatDetailsFunc.bind(null, chat.id)}
             key={chat.id}
             shadow="xl"
@@ -49,7 +53,7 @@ const ChatsSection = ({
             mb="0rem"
             style={{
               cursor: "pointer",
-              backgroundColor: chat.id === selectedChatId ? "#f4adadff" : "#ffffff",
+              backgroundColor: chat.id === selectedChatId ? "#f4adadff" :  hoveredChatId === chat.id ? "#fff2f2" : "#ffffff",
             }}
           >
             <Text fw={700} fz="md" c="red.8" mb="0.5rem">
