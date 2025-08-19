@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, use } from 'react';
 import { Stack, Box, ScrollArea } from '@mantine/core';
 import MessageContainer from './MessageContainer';
 import { ScrollToBottomButton } from './ScrollToBottomButton';
@@ -14,12 +14,14 @@ export interface Message {
 
 interface MessagesContainerProps {
   initialMessages: Message[];
+  initialMessagesLoaded: boolean;
   chatId: number | string;
   getNewMessagesUrl: string;
 }
 
 const MessagesContainer: React.FC<MessagesContainerProps> = ({
   initialMessages,
+  initialMessagesLoaded,
   chatId,
   getNewMessagesUrl
 }) => {
@@ -28,14 +30,22 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
     initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0
   );
-  const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
-
+  // const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
+  
+  const runFetchRef=useRef<boolean>(false);
+  const lastMessageNumberRef=useRef<number>(lastMessageNumber);
+  useEffect(()=>{
+    lastMessageNumberRef.current=lastMessageNumber;
+  },[lastMessageNumber]);
+  
   useEffect(() => {
-    setInitialMessagesLoaded(false);
+    // setInitialMessagesLoaded(false);
+    runFetchRef.current=false;
     setMessages(initialMessages);
     setLastMessageNumber(initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0);
     scrollToBottom();
-    setInitialMessagesLoaded(true);
+    runFetchRef.current=true;
+    // setInitialMessagesLoaded(true);
   }, [chatId, initialMessages]);
 
   
@@ -71,11 +81,13 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   };
 
   const fetchNewMessagesOnce = async () => {
+    console.log("fetch with last message number: ", lastMessageNumberRef.current);
     const response = await fetch(
-      `${getNewMessagesUrl}?chat_pk=${chatId}&last_message_number=${lastMessageNumber}`
+      `${getNewMessagesUrl}?chat_pk=${chatId}&last_message_number=${lastMessageNumberRef.current}`
     );
     const data = await response.json();
-    if (data.last_message_number > lastMessageNumber) {
+    console.log("checking last message number before setting: ", data.last_message_number);
+    if (data.last_message_number > lastMessageNumberRef.current) {
       setLastMessageNumber(data.last_message_number);
     }
     else { return; }
@@ -99,15 +111,12 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   };
 
 
-  // // Scroll to bottom on initial load
-  // useEffect(() => {
-  //   scrollToBottom();
-  // }, []);
-
   // Fetch new messages
   useEffect(() => {
     let isMounted = true;
+    let timeoutId: NodeJS.Timeout;
     if (!initialMessagesLoaded) return;
+    if (!runFetchRef.current) return;
     const fetchNewMessagesLoop = async () => {
       if (!isMounted || !initialMessagesLoaded) return;
       try {
@@ -121,7 +130,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         }
       } finally {
         if (isMounted && initialMessagesLoaded) {
-          setTimeout(fetchNewMessagesLoop, 250);
+          timeoutId = setTimeout(fetchNewMessagesLoop, 250);
         }
       }
     };
@@ -131,8 +140,8 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
 
     // Cleanup on unmount
     return () => {
-      // Clear any pending timeouts
       isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, [initialMessagesLoaded, lastMessageNumber]);
 

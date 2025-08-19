@@ -46,6 +46,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const getChatData = async () => {
+    setInitialMessagesLoaded(false);
     const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
     const data = await response.json();
     setChatName(data.chat_name);
@@ -54,13 +55,14 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   const setChatDetailsFunc = async (chatId: number) => {
-    setInitialMessagesLoaded(false);
-    const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
-    const data = await response.json();
-    setChatName(data.chat_name);
-    setInitialMessages(data.messages);
+    // setInitialMessagesLoaded(false);
+    // const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
+    // const data = await response.json();
+    // setChatName(data.chat_name);
+    // setInitialMessages(data.messages);
+    // setChatId(chatId);
+    // setInitialMessagesLoaded(true);
     setChatId(chatId);
-    setInitialMessagesLoaded(true);
   };
 
   useEffect(() => {
@@ -143,6 +145,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         >
           <MessagesContainer
             initialMessages={initialMessages}
+            initialMessagesLoaded={initialMessagesLoaded}
             chatId={chatId}
             getNewMessagesUrl={getNewMessagesUrl}
           />

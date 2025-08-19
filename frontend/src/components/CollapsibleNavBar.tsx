@@ -30,9 +30,13 @@ const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;
   collapser: () => void;
 }> = ({ isCollapsed, collapser }) => {
+  const [hovered, setHovered] = useState<boolean>(false);
+
   return (
-    <ActionIcon
+    <Box
       color="red"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       onClick={collapser}
       style={{
         position: "absolute",
@@ -40,7 +44,7 @@ const ArrowedMarginTab: React.FC<{
         // top: "50%",
         width: "40px",
         height: "100%",
-        // backgroundColor: "#ff8d8dff",
+        backgroundColor: hovered? "#ffbbbbff": "#ffe9e9ff",
         zIndex: 1,
         display: "flex",
         flexDirection: "column",
@@ -52,7 +56,7 @@ const ArrowedMarginTab: React.FC<{
       <ActionIcon color="#fe0000ff">
         {isCollapsed ? <IconArrowRight /> : <IconArrowLeft />}
       </ActionIcon>
-    </ActionIcon>
+    </Box>
   );
 };
 
