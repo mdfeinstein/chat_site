@@ -1,45 +1,71 @@
 import React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Burger } from "@mantine/core";
 import MessagesContainer from "./MessagesContainer";
 import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 
 interface ChatPageProps {
-  chatName: string;
-  chatId: number | string;
+  chatId_initial: number | string;
   homeUrl: string;
   exitChatUrl: string;
   logoutUrl: string;
   getNewMessagesUrl: string;
-  initialMessages: Message[];
   sendMessageUrl: string;
   getChatsUrl: string;
   getFriendInfoUrl: string;
+  getChatDataUrl: string;
   csrfToken: string;
 }
 
 
 const ChatPage: React.FC<ChatPageProps> = ({
-  chatName,
-  chatId,
+  chatId_initial,
   homeUrl,
   exitChatUrl,
   logoutUrl,
   getNewMessagesUrl,
-  initialMessages,
   sendMessageUrl,
   getChatsUrl,
   getFriendInfoUrl,
+  getChatDataUrl,
   csrfToken,
 }) => {
+  if (typeof chatId_initial === "string") {
+    chatId_initial = parseInt(chatId_initial);
+  }
+  const [chatId, setChatId] = useState<number>(chatId_initial);
+  const [chatName, setChatName] = useState<string>("");
   const [isNavBarCollapsed, setIsNavBarCollapsed] = useState<boolean>(true);
+  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
+  const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
   const toggleNavBar = () => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
+
+  const getChatData = async () => {
+    const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
+    const data = await response.json();
+    setChatName(data.chat_name);
+    setInitialMessages(data.messages);
+    setInitialMessagesLoaded(true);
+  };
+
+  const setChatDetailsFunc = async (chatId: number) => {
+    setInitialMessagesLoaded(false);
+    const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
+    const data = await response.json();
+    setChatName(data.chat_name);
+    setInitialMessages(data.messages);
+    setChatId(chatId);
+    setInitialMessagesLoaded(true);
+  };
+
+  useEffect(() => {
+    getChatData();
+  }, [chatId]);
 
 
 
@@ -73,6 +99,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           collapser={toggleNavBar}
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
+          setChatDetailsFunc={setChatDetailsFunc}
         />
         </Box>
       <Box

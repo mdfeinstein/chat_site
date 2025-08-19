@@ -26,6 +26,7 @@ urlpatterns = [
     path('login_request', chat.views.ChatUserLoginView.as_view(template_name = "login.html", next_page='home'), name='login_request'),
     path('home', chat.views.home, name='home'), #chat list, friends list, logout button
     path('chat', chat.views.chat, name='chat'),
+    path('chat_page', chat.views.chat_page, name='chat_page'),
     path('logout', chat.views.ChatUserLogoutView.as_view(template_name='logout.html'), name='logout'),
     path('add_chat', chat.views.add_chat, name='add_chat'),
     path('send_message', chat.views.send_message, name='send_message'),
@@ -35,4 +36,5 @@ urlpatterns = [
     path('request_friends', chat.views.request_friends, name='request_friends'),
     path('get_chats', chat.views.get_chats, name='get_chats'),
     path('get_friend_info', chat.views.get_friend_info, name='get_friend_info'),
+    path('get_chat_data', chat.views.get_chat_data, name='get_chat_data'),
 ]

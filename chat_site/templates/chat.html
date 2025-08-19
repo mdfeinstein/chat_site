@@ -16,43 +16,13 @@
     <title>Chat - ChitChat</title>
     {% vite_hmr_client %}
     {% vite_asset 'src/main.tsx' %}
-    <style>
-        {% comment %} body {  display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; } {% endcomment %}
-    </style>
+
 </head>
 <body>
-    {% comment %} <div 
-      id="react-topbar"
-      data-chat-name="{{ chat }}"
-      data-chat-id="{{ chat.pk }}"
-      data-home-url="{% url 'home' %}"
-      data-exit-chat-url="{% url 'exit_chat' %}"
-      data-logout-url="{% url 'logout' %}"
-    >
-      {% csrf_token %}
-    </div>
-    
-    <div 
-      class="chat-container" 
-      id="chat-container"
-      data-get-new-messages-url="{% url 'get_new_messages' %}"
-      data-chat-id="{{ chat.pk }}"
-    >
-        {% include '_messages.html' %}
-    </div>
-
-    <div
-      id="react-message-form"
-      data-url="{% url 'send_message_async' %}"
-      data-chat-id="{{ chat_number }}"
-    >
-        {% csrf_token %}
-    </div> {% endcomment %}
 
     {% csrf_token %}
     <div 
       id="react-chat-page"
-      data-chat-name="{{ chat }}"
       data-chat-id="{{ chat.pk }}"
       data-home-url="{% url 'home' %}"
       data-exit-chat-url="{% url 'exit_chat' %}"
@@ -62,8 +32,8 @@
       data-csrf-token = "{{ csrf_token }}"
       data-get-chats-url="{% url 'get_chats' %}"
       data-get-friend-info-url="{% url 'get_friend_info' %}"
+      data-get-chat-data-url="{% url 'get_chat_data' %}"
     >
-      {% include '_messages.html' %}
     </div>
 
 

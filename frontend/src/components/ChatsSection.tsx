@@ -11,35 +11,41 @@ interface ChatData {
   lastMessageDate: string;
 }
 
-const formatDate = (createdAt :string) => {
+const formatDate = (createdAt: string) => {
   // Format the date if needed
-  
-  return new Date(createdAt).toLocaleString('en-US', {
-    month: 'numeric',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true
+
+  return new Date(createdAt).toLocaleString("en-US", {
+    month: "numeric",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   });
-  
+};
+
+interface ChatsSectionProps {
+  chatData: ChatData[];
+  setChatDetailsFunc: (chatId: number) => void;
 }
 
-const ChatsSection = ({ chatData }: { chatData: ChatData[] }) => {
-
+const ChatsSection = ({
+  chatData,
+  setChatDetailsFunc,
+}: ChatsSectionProps) => {
   return (
     <ScrollArea>
       <Stack>
         {chatData.map((chat) => (
           <Paper
-            onClick={() => window.location.href = chat.link}
+            onClick={setChatDetailsFunc.bind(null, chat.id)}
             key={chat.id}
             shadow="xl"
             p="md"
             withBorder
             radius="lg"
             mb="0rem"
-            style ={{
+            style={{
               cursor: "pointer",
             }}
           >
@@ -54,9 +60,7 @@ const ChatsSection = ({ chatData }: { chatData: ChatData[] }) => {
             </Text>
           </Paper>
         ))}
-
       </Stack>
-
     </ScrollArea>
   );
 };

@@ -32,7 +32,6 @@ const ArrowedMarginTab: React.FC<{
 }> = ({ isCollapsed, collapser }) => {
   return (
     <ActionIcon
-      
       color="red"
       onClick={collapser}
       style={{
@@ -44,19 +43,15 @@ const ArrowedMarginTab: React.FC<{
         // backgroundColor: "#ff8d8dff",
         zIndex: 1,
         display: "flex",
-        flexDirection : "column",
+        flexDirection: "column",
         justifyContent: "center",
         alignItems: "center",
         cursor: "pointer",
       }}
-
     >
-      <ActionIcon
-      color="#fe0000ff"
-      >
+      <ActionIcon color="#fe0000ff">
         {isCollapsed ? <IconArrowRight /> : <IconArrowLeft />}
       </ActionIcon>
-      
     </ActionIcon>
   );
 };
@@ -95,11 +90,13 @@ const CollapsibleNavBar = ({
   collapser,
   getChatsUrl,
   getFriendInfoUrl,
+  setChatDetailsFunc,
 }: {
   isCollapsed: boolean;
   collapser: () => void;
   getChatsUrl: string;
   getFriendInfoUrl: string;
+  setChatDetailsFunc: (chatId: number) => void;
 }) => {
   const getChatsData = async () => {
     const response = await fetch(getChatsUrl);
@@ -117,7 +114,12 @@ const CollapsibleNavBar = ({
   const [chatData, setChatData] = useState<ChatData[]>([]);
   const [friendData, setFriendData] = useState<FriendData[]>([]);
 
-  const chatsElement = <ChatsSection chatData={chatData!} />;
+  const chatsElement = (
+    <ChatsSection
+      chatData={chatData!}
+      setChatDetailsFunc={setChatDetailsFunc}
+    />
+  );
   const friendsElement = <FriendsSection friendData={friendData!} />;
   useEffect(() => {
     getChatsData();

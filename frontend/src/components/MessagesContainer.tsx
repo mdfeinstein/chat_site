@@ -28,6 +28,15 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
     initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0
   );
+  const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
+
+  useEffect(() => {
+    setInitialMessagesLoaded(false);
+    setMessages(initialMessages);
+    setLastMessageNumber(initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0);
+    scrollToBottom();
+    setInitialMessagesLoaded(true);
+  }, [chatId, initialMessages]);
 
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -80,6 +89,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       messageNumber: message.message_number,
       isNew: true,
     }));
+
     // Add new messages to the state
     setMessages(prevMessages => [...prevMessages, ...newMessages]);
     //scroll to bottom if new message is from this user
@@ -88,16 +98,18 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     }
   };
 
-  // Scroll to bottom on initial load
-  useEffect(() => {
-    scrollToBottom();
-  }, []);
+
+  // // Scroll to bottom on initial load
+  // useEffect(() => {
+  //   scrollToBottom();
+  // }, []);
 
   // Fetch new messages
   useEffect(() => {
     let isMounted = true;
+    if (!initialMessagesLoaded) return;
     const fetchNewMessagesLoop = async () => {
-      if (!isMounted) return;
+      if (!isMounted || !initialMessagesLoaded) return;
       try {
         await fetchNewMessagesOnce();
 
@@ -108,20 +120,21 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
           console.error('Error details:', error.message);
         }
       } finally {
-        if (isMounted) {
+        if (isMounted && initialMessagesLoaded) {
           setTimeout(fetchNewMessagesLoop, 250);
         }
       }
     };
-
-    fetchNewMessagesLoop();
+    if (initialMessagesLoaded) {
+      fetchNewMessagesLoop();
+    }
 
     // Cleanup on unmount
     return () => {
       // Clear any pending timeouts
       isMounted = false;
     };
-  });
+  }, [initialMessagesLoaded, lastMessageNumber]);
 
   return (
     <ScrollArea

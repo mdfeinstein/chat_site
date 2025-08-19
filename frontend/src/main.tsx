@@ -69,7 +69,6 @@ const parseInitialMessages = (): Message[] => {
 const mountChatPage = () => {
   const chatPage = document.getElementById('react-chat-page');
   if (chatPage) {
-    const chatName = chatPage.getAttribute('data-chat-name') || '';
     const chatId = chatPage.getAttribute('data-chat-id') || '';
     const homeUrl = chatPage.getAttribute('data-home-url') || '';
     const exitChatUrl = chatPage.getAttribute('data-exit-chat-url') || '';
@@ -78,6 +77,7 @@ const mountChatPage = () => {
     const sendMessageUrl = chatPage.getAttribute('data-send-message-url') || '';
     const getChatsUrl = chatPage.getAttribute('data-get-chats-url') || '';
     const getFriendInfoUrl = chatPage.getAttribute('data-get-friend-info-url') || '';
+    const getChatDataUrl = chatPage.getAttribute('data-get-chat-data-url') || '';
     const csrfToken = chatPage.getAttribute('data-csrf-token') || '';
     const initialMessages = parseInitialMessages();
     console.log('Initial messages:', initialMessages);
@@ -87,16 +87,15 @@ const mountChatPage = () => {
       <MantineProvider theme={mantineTheme}>
       <StrictMode>
         <ChatPage
-          chatName={chatName}
-          chatId={chatId}
+          chatId_initial={chatId}
           homeUrl={homeUrl}
           exitChatUrl={exitChatUrl}
           logoutUrl={logoutUrl}
           getNewMessagesUrl={getNewMessagesUrl}
-          initialMessages={initialMessages}
           sendMessageUrl={sendMessageUrl}
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
+          getChatDataUrl={getChatDataUrl}
           csrfToken={csrfToken}
         />
       </StrictMode>
