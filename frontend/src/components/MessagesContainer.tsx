@@ -32,7 +32,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   );
   // const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
   
-  const runFetchRef=useRef<boolean>(false);
+  // const runFetchRef=useRef<boolean>(false);
   const lastMessageNumberRef=useRef<number>(lastMessageNumber);
   useEffect(()=>{
     lastMessageNumberRef.current=lastMessageNumber;
@@ -40,11 +40,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   
   useEffect(() => {
     // setInitialMessagesLoaded(false);
-    runFetchRef.current=false;
     setMessages(initialMessages);
     setLastMessageNumber(initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0);
     scrollToBottom();
-    runFetchRef.current=true;
     // setInitialMessagesLoaded(true);
   }, [chatId, initialMessages]);
 
@@ -116,7 +114,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     let isMounted = true;
     let timeoutId: NodeJS.Timeout;
     if (!initialMessagesLoaded) return;
-    if (!runFetchRef.current) return;
     const fetchNewMessagesLoop = async () => {
       if (!isMounted || !initialMessagesLoaded) return;
       try {

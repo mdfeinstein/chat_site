@@ -102,6 +102,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
           setChatDetailsFunc={setChatDetailsFunc}
+          selectedChatId={chatId}
         />
         </Box>
       <Box

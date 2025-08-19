@@ -95,12 +95,14 @@ const CollapsibleNavBar = ({
   getChatsUrl,
   getFriendInfoUrl,
   setChatDetailsFunc,
+  selectedChatId,
 }: {
   isCollapsed: boolean;
   collapser: () => void;
   getChatsUrl: string;
   getFriendInfoUrl: string;
   setChatDetailsFunc: (chatId: number) => void;
+  selectedChatId: number;
 }) => {
   const getChatsData = async () => {
     const response = await fetch(getChatsUrl);
@@ -122,6 +124,7 @@ const CollapsibleNavBar = ({
     <ChatsSection
       chatData={chatData!}
       setChatDetailsFunc={setChatDetailsFunc}
+      selectedChatId={selectedChatId}
     />
   );
   const friendsElement = <FriendsSection friendData={friendData!} />;

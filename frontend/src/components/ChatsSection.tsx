@@ -27,11 +27,13 @@ const formatDate = (createdAt: string) => {
 interface ChatsSectionProps {
   chatData: ChatData[];
   setChatDetailsFunc: (chatId: number) => void;
+  selectedChatId: number;
 }
 
 const ChatsSection = ({
   chatData,
   setChatDetailsFunc,
+  selectedChatId,
 }: ChatsSectionProps) => {
   return (
     <ScrollArea>
@@ -47,6 +49,7 @@ const ChatsSection = ({
             mb="0rem"
             style={{
               cursor: "pointer",
+              backgroundColor: chat.id === selectedChatId ? "#f4adadff" : "#ffffff",
             }}
           >
             <Text fw={700} fz="md" c="red.8" mb="0.5rem">
