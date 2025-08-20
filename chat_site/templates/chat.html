@@ -30,7 +30,7 @@
       data-get-new-messages-url="{% url 'get_new_messages' %}"
       data-send-message-url="{% url 'send_message_async' %}"
       data-csrf-token = "{{ csrf_token }}"
-      data-get-chats-url="{% url 'get_chats' %}"
+      data-get-chats-url="{% url 'get_chats_with_history' %}"
       data-get-friend-info-url="{% url 'get_friend_info' %}"
       data-get-chat-data-url="{% url 'get_chat_data' %}"
     >

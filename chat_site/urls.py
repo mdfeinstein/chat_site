@@ -37,4 +37,5 @@ urlpatterns = [
     path('get_chats', chat.views.get_chats, name='get_chats'),
     path('get_friend_info', chat.views.get_friend_info, name='get_friend_info'),
     path('get_chat_data', chat.views.get_chat_data, name='get_chat_data'),
+    path('get_chats_with_history', chat.views.get_chats_with_history, name='get_chats_with_history'),
 ]

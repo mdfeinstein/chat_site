@@ -25,6 +25,7 @@ import FriendsSection from "./FriendsSection";
 import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
+import type { ChatData } from "./ChatsSection";
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;
@@ -60,34 +61,20 @@ const ArrowedMarginTab: React.FC<{
   );
 };
 
-interface ChatData {
-  id: number;
-  name: string;
-  link: string;
-  lastMessage: string;
-  lastMessageAuthor: string;
-  lastMessageDate: string;
-}
+// interface ChatData {
+//   id: number;
+//   name: string;
+//   link: string;
+//   lastMessage: string[];
+//   lastMessageAuthor: string[];
+//   lastMessageDate: string[];
+// }
 
 interface FriendData {
   status: "friend" | "requestedByUser" | "requestedByOther";
   name: string;
   online: boolean;
 }
-// Define data for the navigation items
-const accountData = [
-  { icon: IconMessages, label: "Messages", href: "#" },
-  { icon: IconUsers, label: "Friends", href: "#" },
-  { icon: IconSettings, label: "Settings", href: "#" },
-];
-
-const generalData = [
-  { icon: IconFileAnalytics, label: "Analytics", href: "#" },
-  { icon: IconDatabaseImport, label: "Export Data", href: "#" },
-  { icon: IconBellRinging, label: "Notifications", href: "#" },
-  { icon: IconFingerprint, label: "Security", href: "#" },
-  { icon: IconKey, label: "API Keys", href: "#" },
-];
 
 const CollapsibleNavBar = ({
   isCollapsed,
@@ -179,8 +166,12 @@ const CollapsibleNavBar = ({
           />
         </Box>
 
-        <Box style={{ flex: 1 }}>
-          <Stack>{section === "Chats" ? chatsElement : friendsElement}</Stack>
+        <Box style={{
+          flex: 1,             // Take available space
+          minHeight: 0,        // Allow shrinking below content size
+          overflow: 'hidden'   // Contain the scroll area
+        }}>
+          {section === "Chats" ? chatsElement : friendsElement}
         </Box>
 
         <Box mt="auto" pt={20}>

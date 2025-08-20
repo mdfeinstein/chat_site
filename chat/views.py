@@ -8,6 +8,7 @@ from chat.models import ChatUser, Chat, Message
 from chat.forms import ChatForm, MessageForm, RequestFriendsForm
 from django.template.loader import render_to_string
 from django.http import JsonResponse
+from django.db.models import Max
 
 
 # Create your views here.
@@ -92,9 +93,7 @@ def chat_page(request):
     return render(
         request,
         "chat.html",
-        {
-            "chat": Chat.objects.get(pk=chat_pk)
-        },
+        {"chat": Chat.objects.get(pk=chat_pk)},
     )
 
 
@@ -238,6 +237,7 @@ def get_chats(request):
         chat_dict["link"] = (
             reverse("get_chat_data") + "?chat_id=" + str(chat.pk)
         )
+
         last_message = chat.messages.order_by("message_number").last()
         chat_dict["lastMessage"] = (
             last_message.text if last_message is not None else ""
@@ -252,6 +252,49 @@ def get_chats(request):
             if last_message is not None
             else ""
         )
+        chat_dicts.append(chat_dict)
+
+    print(chat_dicts)
+
+    return JsonResponse(chat_dicts, safe=False)
+
+
+def get_chats_with_history(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chats = Chat.objects.filter(users=chat_user).annotate(
+        last_message_time=Max("messages__createdAt")
+    ).order_by("-last_message_time")
+    chat_dicts = []
+    for chat in chats:
+        chat_dict = {}
+        chat_dict["id"] = chat.pk
+        chat_dict["name"] = str(chat)
+        chat_dict["link"] = (
+            reverse("get_chat_data") + "?chat_id=" + str(chat.pk)
+        )
+
+        last_messages = chat.messages.order_by("-message_number")[:10]
+        # last_messages.sort(key=lambda msg: msg.createdAt)
+        chat_dict["lastMessages"] = [
+            last_message.text if last_message is not None else ""
+            for last_message in last_messages
+        ]
+        chat_dict["lastMessagesAuthors"] = [
+            (
+                last_message.sender.user.username
+                if last_message is not None
+                else ""
+            )
+            for last_message in last_messages
+        ]
+        chat_dict["lastMessagesDates"] = [
+            (
+                last_message.createdAt.isoformat()
+                if last_message is not None
+                else ""
+            )
+            for last_message in last_messages
+        ]
         chat_dicts.append(chat_dict)
 
     print(chat_dicts)

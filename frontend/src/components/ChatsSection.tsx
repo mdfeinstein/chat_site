@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import React from "react";
 
 
-interface ChatData {
+export interface ChatData {
   id: number;
   name: string;
   link: string;
-  lastMessage: string;
-  lastMessageAuthor: string;
-  lastMessageDate: string;
+  lastMessages: string[];
+  lastMessagesAuthors: string[];
+  lastMessagesDates: string[];
 }
 
 const formatDate = (createdAt: string) => {
@@ -38,8 +38,18 @@ const ChatsSection = ({
 }: ChatsSectionProps) => {
   const [hoveredChatId, setHoveredChatId]=useState<number|null>(null);
   return (
-    <ScrollArea>
-      <Stack>
+    <ScrollArea
+    h={600}
+    type="always"
+    scrollbarSize={8}
+    style={{
+      // height: "100%",
+      flex: 1,
+      minHeight: 0,
+    }}
+    >
+      <Stack
+      >
         {chatData.map((chat) => (
           <Paper
             onMouseEnter={() => setHoveredChatId(chat.id)}
@@ -56,15 +66,25 @@ const ChatsSection = ({
               backgroundColor: chat.id === selectedChatId ? "#f4adadff" :  hoveredChatId === chat.id ? "#fff2f2" : "#ffffff",
             }}
           >
-            <Text fw={700} fz="md" c="red.8" mb="0.5rem">
+              
+            <Text fw={700} fz="lg" c="red.8" mb="0.5rem">
               {chat.name}
             </Text>
-            <Text fz="xs" c="dimmed">
-              {chat.lastMessageAuthor} • {formatDate(chat.lastMessageDate)}
-            </Text>
-            <Text fz="sm" c="dimmed">
-              {chat.lastMessage}
-            </Text>
+              <ScrollArea
+              h={100}
+              >
+              {chat.lastMessages.map((_, i) => (
+                <>
+                <Text fz="sm" c="dimmed">
+                  {chat.lastMessagesAuthors[i]} • {formatDate(chat.lastMessagesDates[i])}
+                </Text>
+                <Text fz="md" c="dimmed">
+                  {chat.lastMessages[i]}
+                </Text>
+                </>
+
+              ))}
+              </ScrollArea>
           </Paper>
         ))}
       </Stack>
