@@ -9,6 +9,7 @@ import {
   Menu,
   Button,
   Tooltip,
+  Box
 } from "@mantine/core";
 import { use, useEffect, useState } from "react";
 import React from "react";
@@ -16,7 +17,8 @@ import {
   IconInnerShadowTopRightFilled,
   IconXboxXFilled,
   IconUserCheck,
-  IconUserX
+  IconUserX,
+  IconSend2
 } from "@tabler/icons-react";
 import { urls } from "../urls";
 import { useChatPageContext } from "./ChatPage";
@@ -186,48 +188,40 @@ const FriendsSection = () => {
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
-        <Menu opened={sendRequestMenuOpened} onOpen={getRequestableUsers}>
-          <Menu.Target>
-            <Button
-              fz="md"
-              p="lg"
-              onClick={() => {
-                sendRequestMenuOpened
-                  ? setSendRequestMenuOpened(false)
-                  : setSendRequestMenuOpened(true);
-              }}
-            >
-              New Friend Request
-            </Button>
-          </Menu.Target>
-          <Menu.Dropdown>
-              <Select
-                placeholder="Select User"
-                data={requestableUsers.map(
-                  (user: RequestableUserData) => user.name
-                )}
-                value={selectedUser.name}
-                searchable
-                onChange={(value) =>
-                  setSelectedUser(
-                    requestableUsers.find(
-                      (user: RequestableUserData) => user.name === value!
-                    )!
-                  )
-                }
-              />
-
-              <Button
-                onClick={() => {
-                  requestUser(selectedUser);
-                  setSendRequestMenuOpened(false);
-                }}
-              >
-                Send
-              </Button>
-
-          </Menu.Dropdown>
-        </Menu>
+        <Box 
+          style={{
+            display : 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}
+        >
+        <Select
+          placeholder="Select User"
+          data={requestableUsers.map(
+            (user: RequestableUserData) => user.name
+          )}
+          value={selectedUser.name}
+          searchable
+          onChange={(value) =>
+            setSelectedUser(
+              requestableUsers.find(
+                (user: RequestableUserData) => user.name === value!
+              )!
+            )
+          }
+        />
+        <Tooltip label="Send Request" position="bottom" withArrow>
+        <ActionIcon
+          onClick={() => {
+            requestUser(selectedUser);
+            setSendRequestMenuOpened(false);
+          }}
+        >
+          <IconSend2/>
+        </ActionIcon>
+        </Tooltip>
+        </Box>
         <ScrollArea h={400}>
           <Stack>
             {friendRequests.map((friend: FriendData) => (
