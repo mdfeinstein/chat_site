@@ -34,8 +34,11 @@ urlpatterns = [
     path('get_new_messages', chat.views.get_new_messages, name='get_new_messages'),
     path("exit_chat", chat.views.exit_chat, name="exit_chat"),
     path('request_friends', chat.views.request_friends, name='request_friends'),
+    path('request_friend', chat.views.request_friend, name='request_friend'),
+    path("get_requestable_users", chat.views.get_requestable_users, name="get_requestable_users"),
     path('get_chats', chat.views.get_chats, name='get_chats'),
     path('get_friend_info', chat.views.get_friend_info, name='get_friend_info'),
     path('get_chat_data', chat.views.get_chat_data, name='get_chat_data'),
     path('get_chats_with_history', chat.views.get_chats_with_history, name='get_chats_with_history'),
+    path('cancel_request', chat.views.cancel_request, name='cancel_request'),
 ]

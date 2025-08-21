@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, createContext, useContext } from "react";
 import { Box, Burger } from "@mantine/core";
 import MessagesContainer from "./MessagesContainer";
 import type { Message } from "./MessagesContainer";
@@ -20,6 +20,13 @@ interface ChatPageProps {
   csrfToken: string;
 }
 
+interface ChatPageContext {
+  csrfToken: string;
+}
+
+const ChatPageContext = createContext<ChatPageContext>({} as ChatPageContext);
+const ChatPageContextProvider = ChatPageContext.Provider;
+export const useChatPageContext = () => useContext(ChatPageContext);
 
 const ChatPage: React.FC<ChatPageProps> = ({
   chatId_initial,
@@ -72,6 +79,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
 
 
   return (
+    <ChatPageContextProvider value={{ csrfToken: csrfToken }}>
+
     <Box
       style={{
         // display: 'flex',
@@ -171,6 +180,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         </Box>
       </Box>
     </Box>
+    </ChatPageContextProvider>
   );
 };
 

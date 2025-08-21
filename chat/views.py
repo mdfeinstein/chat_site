@@ -8,7 +8,8 @@ from chat.models import ChatUser, Chat, Message
 from chat.forms import ChatForm, MessageForm, RequestFriendsForm
 from django.template.loader import render_to_string
 from django.http import JsonResponse
-from django.db.models import Max
+from django.db.models import Max, F
+import json
 
 
 # Create your views here.
@@ -226,6 +227,73 @@ def request_friends(request):
     return HTTPResponseRedirect(reverse("home"))
 
 
+def request_friend(request):
+    data = json.loads(request.body)
+    print(data)
+    chat_user = ChatUser.objects.get(user__pk=request.user.pk)
+    try:
+        print(int(data.get("requested_user_pk")))
+        requested_user = ChatUser.objects.get(
+            pk=int(data.get("requested_user_pk"))
+        )
+    except ChatUser.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": "User not found"}
+        )
+    # check if friend is already in the list
+    if requested_user in chat_user.friends_list.friends.all():
+        return JsonResponse(
+            {"success": False, "message": "Friend already in list"}
+        )
+    # is requested_user already requested this user, transfer to friend list
+    elif (
+        chat_user in requested_user.friends_list.requested_users.all()
+    ):
+        requested_user.friends_list.friends.add(chat_user)
+        requested_user.friends_list.requested_users.remove(chat_user)
+        requested_user.friends_list.save()
+        chat_user.friends_list.friends.add(requested_user)
+        chat_user.freinds_list.save()
+        return JsonResponse(
+            {"success": True, "message": "Friend added"}
+        )
+    else:
+        # add requesteD_user to requested_users
+        chat_user.friends_list.requested_users.add(requested_user)
+        chat_user.friends_list.save()
+        return JsonResponse(
+            {"success": True, "message": "Request sent"}
+        )
+
+
+def cancel_request(request):
+    chat_user = ChatUser.objects.get(user__pk=request.user.pk)
+    data = json.loads(request.body)  # request
+    chat_user.friends_list.requested_users.filter(
+        user__username=data.get("requested_user_name")
+    ).delete()
+    chat_user.friends_list.save()
+    return JsonResponse(
+        {"success": True, "message": "Request cancelled"}
+    )
+
+
+def get_requestable_users(request):
+    """
+    Returns a list of users that can be requested by the current user
+    """
+    chat_user = ChatUser.objects.get(user=request.user)
+    users = (
+        ChatUser.objects.exclude(pk=chat_user.pk)
+        .exclude(pk__in=chat_user.friends_list.friends.all())
+        .exclude(pk__in=chat_user.friends_list.requested_users.all())
+    )
+    user_dict = [
+        {"name": user.user.username, "pk": user.pk} for user in users
+    ]
+    return JsonResponse({"users": user_dict})
+
+
 def get_chats(request):
     chat_user = ChatUser.objects.get(user=request.user)
     chats = Chat.objects.filter(users=chat_user)
@@ -261,9 +329,11 @@ def get_chats(request):
 
 def get_chats_with_history(request):
     chat_user = ChatUser.objects.get(user=request.user)
-    chats = Chat.objects.filter(users=chat_user).annotate(
-        last_message_time=Max("messages__createdAt")
-    ).order_by("-last_message_time")
+    chats = (
+        Chat.objects.filter(users=chat_user)
+        .annotate(last_message_time=Max("messages__createdAt"))
+        .order_by("-last_message_time")
+    )
     chat_dicts = []
     for chat in chats:
         chat_dict = {}

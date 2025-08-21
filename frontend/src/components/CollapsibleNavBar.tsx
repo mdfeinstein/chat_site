@@ -26,6 +26,7 @@ import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
 import type { ChatData } from "./ChatsSection";
+import type { FriendData } from "./FriendsSection";
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;
@@ -60,21 +61,6 @@ const ArrowedMarginTab: React.FC<{
     </Box>
   );
 };
-
-// interface ChatData {
-//   id: number;
-//   name: string;
-//   link: string;
-//   lastMessage: string[];
-//   lastMessageAuthor: string[];
-//   lastMessageDate: string[];
-// }
-
-interface FriendData {
-  status: "friend" | "requestedByUser" | "requestedByOther";
-  name: string;
-  online: boolean;
-}
 
 const CollapsibleNavBar = ({
   isCollapsed,
@@ -114,7 +100,7 @@ const CollapsibleNavBar = ({
       selectedChatId={selectedChatId}
     />
   );
-  const friendsElement = <FriendsSection friendData={friendData!} />;
+  const friendsElement = <FriendsSection friendsData={friendData!} />;
   useEffect(() => {
     getChatsData();
   }, []);
