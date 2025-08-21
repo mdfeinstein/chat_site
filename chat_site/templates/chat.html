@@ -1,41 +1,34 @@
-{% load static %}
-{% load django_vite %}
+{% load static %} {% load django_vite %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <script src="http://localhost:8097"></script>
-  <script type="module">
-      import RefreshRuntime from 'http://localhost:5173/@react-refresh'
-      RefreshRuntime.injectIntoGlobalHook(window)
-      window.$RefreshReg$ = () => {}
-      window.$RefreshSig$ = () => (type) => type
-      window.__vite_plugin_react_preamble_installed__ = true
-  </script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <script src="http://localhost:8097"></script>
+    <script type="module">
+      import RefreshRuntime from "http://localhost:5173/@react-refresh";
+      RefreshRuntime.injectIntoGlobalHook(window);
+      window.$RefreshReg$ = () => {};
+      window.$RefreshSig$ = () => (type) => type;
+      window.__vite_plugin_react_preamble_installed__ = true;
+    </script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Chat - ChitChat</title>
-    {% vite_hmr_client %}
-    {% vite_asset 'src/main.tsx' %}
-
-</head>
-<body>
-
+    {% vite_hmr_client %} {% vite_asset 'src/main.tsx' %}
+  </head>
+  <body>
     {% csrf_token %}
-    <div 
+    <div
       id="react-chat-page"
-      data-chat-id="{{ chat.pk }}"
+      data-chat-id="{{ chat_pk }}"
       data-home-url="{% url 'home' %}"
       data-exit-chat-url="{% url 'exit_chat' %}"
       data-logout-url="{% url 'logout' %}"
       data-get-new-messages-url="{% url 'get_new_messages' %}"
       data-send-message-url="{% url 'send_message_async' %}"
-      data-csrf-token = "{{ csrf_token }}"
+      data-csrf-token="{{ csrf_token }}"
       data-get-chats-url="{% url 'get_chats_with_history' %}"
       data-get-friend-info-url="{% url 'get_friend_info' %}"
       data-get-chat-data-url="{% url 'get_chat_data' %}"
-    >
-    </div>
-
-
-    </body>
-  </html>
+    ></div>
+  </body>
+</html>

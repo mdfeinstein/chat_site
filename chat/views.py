@@ -85,16 +85,19 @@ def chat(request):
 def chat_page(request):
     # default to chat with most recent message
     chat_user = ChatUser.objects.get(user=request.user)
-    chat_pk = (
+    most_recent_message = (
         Message.objects.filter(chat__users=chat_user)
         .order_by("-createdAt")
         .first()
-        .chat.pk
     )
+    if most_recent_message:
+        chat_pk = most_recent_message.chat.pk
+    else:
+        chat_pk = -1
     return render(
         request,
         "chat.html",
-        {"chat": Chat.objects.get(pk=chat_pk)},
+        {"chat_pk": chat_pk},
     )
 
 
@@ -269,9 +272,11 @@ def request_friend(request):
 def cancel_request(request):
     chat_user = ChatUser.objects.get(user__pk=request.user.pk)
     data = json.loads(request.body)  # request
-    chat_user.friends_list.requested_users.filter(
-        user__username=data.get("requested_user_name")
-    ).delete()
+    chat_user.friends_list.requested_users.remove(
+        ChatUser.objects.get(
+            user__username=data.get("requested_user_name")
+        )
+    )
     chat_user.friends_list.save()
     return JsonResponse(
         {"success": True, "message": "Request cancelled"}
@@ -394,7 +399,7 @@ def get_friend_info(request):
     for invited_by_list in invited_by_lists:
         friend_dict = {}
         friend_dict["status"] = "requestedByOther"
-        friend_dict["name"] = invited_by_list.owner.username
+        friend_dict["name"] = invited_by_list.owner.user.username
         friend_dict["online"] = invited_by_list.owner.loggedIn
         friend_dicts.append(friend_dict)
 
@@ -423,6 +428,47 @@ def get_chat_data(request):
             "chat_name": str(chat),
             "chat_id": chat.pk,
         }
+    )
+
+
+def accept_invite(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    data = json.loads(request.body)
+    print(data)
+    try:
+        inviting_user = ChatUser.objects.get(
+            user__username=data.get("requesting_user_name")
+        )
+    except ChatUser.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": "User not found"}
+        )
+    inviting_user.friends_list.requested_users.remove(chat_user)
+    inviting_user.friends_list.friends.add(chat_user)
+    chat_user.friends_list.friends.add(inviting_user)
+    chat_user.friends_list.save()
+    inviting_user.friends_list.save()
+    return JsonResponse(
+        {"success": True, "message": "Invite accepted"}
+    )
+
+
+def reject_invite(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    data = json.loads(request.body)
+    print(data)
+    try:
+        inviting_user = ChatUser.objects.get(
+            user__username=data.get("requesting_user_name")
+        )
+    except ChatUser.DoesNotExist:
+        return JsonResponse(
+            {"success": False, "message": "User not found"}
+        )
+    inviting_user.friends_list.requested_users.remove(chat_user)
+    inviting_user.friends_list.save()
+    return JsonResponse(
+        {"success": True, "message": "Invite rejected"}
     )
 
 

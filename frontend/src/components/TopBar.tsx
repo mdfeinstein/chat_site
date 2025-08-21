@@ -54,7 +54,7 @@ const TopBar: React.FC<TopBarProps> = ({
           textAlign: 'center',
         }}
       >
-        Chat with {chatName}
+        {chatName}
       </Title>
 
       <Group 

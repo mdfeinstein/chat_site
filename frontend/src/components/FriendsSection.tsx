@@ -7,13 +7,20 @@ import {
   ActionIcon,
   Select,
   Menu,
-  Button
+  Button,
+  Tooltip,
 } from "@mantine/core";
 import { use, useEffect, useState } from "react";
 import React from "react";
-import { IconInnerShadowTopRightFilled, IconXboxXFilled } from "@tabler/icons-react";
+import {
+  IconInnerShadowTopRightFilled,
+  IconXboxXFilled,
+  IconUserCheck,
+  IconUserX
+} from "@tabler/icons-react";
 import { urls } from "../urls";
 import { useChatPageContext } from "./ChatPage";
+import { send } from "process";
 
 export interface FriendData {
   status: "friend" | "requestedByUser" | "requestedByOther";
@@ -26,31 +33,46 @@ export interface RequestableUserData {
   pk: number;
 }
 
-const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
+const FriendsSection = () => {
   const [requestableUsers, setRequestableUsers] = useState<
     RequestableUserData[]
   >([]);
+  const [onlineFriends, setOnlineFriends] = useState<FriendData[]>([]);
+  const [offlineFriends, setOfflineFriends] = useState<FriendData[]>([]);
+  const [friendRequests, setFriendRequests] = useState<FriendData[]>([]);
+  const [friendInvites, setFriendInvites] = useState<FriendData[]>([]);
 
-  let onlineFriends: FriendData[] = [];
-  let offlineFriends: FriendData[] = [];
-  let friendRequests: FriendData[] = [];
-  let friendInvites: FriendData[] = [];
+  const getFriendsData = async () => {
+    const response = await fetch(urls.get_friend_info);
+    const friendsData = await response.json();
+    let onlineFriends: FriendData[] = [];
+    let offlineFriends: FriendData[] = [];
+    let friendRequests: FriendData[] = [];
+    let friendInvites: FriendData[] = [];
+    friendsData.forEach((friend: FriendData) => {
+      if (friend.status === "friend") {
+        if (friend.online) {
+          onlineFriends.push(friend);
+        } else {
+          offlineFriends.push(friend);
+        }
+      } else if (friend.status === "requestedByUser") {
+        friendRequests.push(friend);
+      } else if (friend.status === "requestedByOther") {
+        friendInvites.push(friend);
+      }
+    });
+    setOnlineFriends(onlineFriends);
+    setOfflineFriends(offlineFriends);
+    setFriendRequests(friendRequests);
+    setFriendInvites(friendInvites);
+  };
+
+  useEffect(() => {
+    getFriendsData();
+  }, []);
 
   const { csrfToken } = useChatPageContext();
-
-  friendsData.forEach((friend: FriendData) => {
-    if (friend.status === "friend") {
-      if (friend.online) {
-        onlineFriends.push(friend);
-      } else {
-        offlineFriends.push(friend);
-      }
-    } else if (friend.status === "requestedByUser") {
-      friendRequests.push(friend);
-    } else if (friend.status === "requestedByOther") {
-      friendInvites.push(friend);
-    }
-  });
 
   const getRequestableUsers = async () => {
     const response = await fetch(urls.get_requestable_users);
@@ -58,15 +80,9 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
     setRequestableUsers(data.users);
   };
 
-  // const getFriendsData = async () => {
-  //   const response = await fetch(urls.get_friend_info);
-  //   const data = await response.json();
-  //   setFriendData(data);
-  // };
-
   const refreshFriendsSection = async () => {
     await getRequestableUsers();
-    // await getFriendsData();
+    await getFriendsData();
   };
 
   useEffect(() => {
@@ -91,8 +107,12 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
                 withBorder
                 radius="lg"
                 mb="0rem"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
               >
-                <IconInnerShadowTopRightFilled color="green"></IconInnerShadowTopRightFilled>
+                <IconInnerShadowTopRightFilled color="green"/>
                 <Text fw={700} fz="md" mb="0.5rem">
                   {friend.name}
                 </Text>
@@ -106,8 +126,13 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
                 withBorder
                 radius="lg"
                 mb="0rem"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
               >
-                <Text fw={700} fz="md" c="red.8" mb="0.5rem">
+                <IconInnerShadowTopRightFilled color="red"/>
+                <Text fw={700} fz="md" mb="0.5rem">
                   {friend.name}
                 </Text>
               </Paper>
@@ -129,6 +154,7 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
     });
     const data = await response.json();
     console.log(data);
+    await refreshFriendsSection();
   };
 
   const cancelRequest = async (friend: FriendData) => {
@@ -142,40 +168,65 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
     });
     const data = await response.json();
     console.log(data);
+    await refreshFriendsSection();
   };
 
-  const [selectedUser, setSelectedUser] = useState<RequestableUserData>(
-    {name: "", pk: -1}
-  );
+  const [selectedUser, setSelectedUser] = useState<RequestableUserData>({
+    name: "",
+    pk: -1,
+  });
+
+  const [sendRequestMenuOpened, setSendRequestMenuOpened] =
+    useState<boolean>(false);
   const requestsElement = (
     <Accordion.Item key="requests" value="requests">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Requests
+          Requests ({friendRequests.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
-        <Menu>
+        <Menu opened={sendRequestMenuOpened} onOpen={getRequestableUsers}>
           <Menu.Target>
-            <Button fz="md" p="lg">New Friend Request</Button>
+            <Button
+              fz="md"
+              p="lg"
+              onClick={() => {
+                sendRequestMenuOpened
+                  ? setSendRequestMenuOpened(false)
+                  : setSendRequestMenuOpened(true);
+              }}
+            >
+              New Friend Request
+            </Button>
           </Menu.Target>
           <Menu.Dropdown>
-            <Select
-              placeholder="Select User"
-              data={requestableUsers.map(
-                (user: RequestableUserData) => user.name
-              )}
-              value={selectedUser.name}
-              onChange={(value) => setSelectedUser(
-                requestableUsers.find((user: RequestableUserData) => user.name === value!)!
-              )}
-              searchable
+              <Select
+                placeholder="Select User"
+                data={requestableUsers.map(
+                  (user: RequestableUserData) => user.name
+                )}
+                value={selectedUser.name}
+                searchable
+                onChange={(value) =>
+                  setSelectedUser(
+                    requestableUsers.find(
+                      (user: RequestableUserData) => user.name === value!
+                    )!
+                  )
+                }
               />
-              <Button
-              onClick={() => requestUser(selectedUser)}
-              >Send</Button>
-          </Menu.Dropdown>
 
+              <Button
+                onClick={() => {
+                  requestUser(selectedUser);
+                  setSendRequestMenuOpened(false);
+                }}
+              >
+                Send
+              </Button>
+
+          </Menu.Dropdown>
         </Menu>
         <ScrollArea h={400}>
           <Stack>
@@ -195,9 +246,16 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
                 <Text fw={700} fz="md" c="red.8" mb="0.5rem">
                   {friend.name}
                 </Text>
-                <ActionIcon color="red" size="lg" ml="md"
-                onClick={() => cancelRequest(friend)}
-                ><IconXboxXFilled /></ActionIcon>
+                <Tooltip label="Cancel Request" position="bottom" withArrow>
+                <ActionIcon
+                  color="red"
+                  size="lg"
+                  ml="md"
+                  onClick={() => cancelRequest(friend)}
+                >
+                  <IconXboxXFilled />
+                </ActionIcon>
+                </Tooltip>
               </Paper>
             ))}
           </Stack>
@@ -206,11 +264,39 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
     </Accordion.Item>
   );
 
+  const acceptInvite = async (friend: FriendData) => {
+    const response = await fetch(urls.accept_invite, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ requesting_user_name: friend.name }),
+    });
+    const data = await response.json();
+    console.log(data);
+    await refreshFriendsSection();
+  };
+
+  const rejectInvite = async (friend: FriendData) => {
+    const response = await fetch(urls.reject_invite, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ requesting_user_name: friend.name }),
+    });
+    const data = await response.json();
+    console.log(data);
+    await refreshFriendsSection();
+  };
+
   const invitesElement = (
     <Accordion.Item key="invites" value="invites">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Invites
+          Invites ({friendInvites.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
@@ -224,11 +310,28 @@ const FriendsSection = ({ friendsData }: { friendsData: FriendData[] }) => {
                 withBorder
                 radius="lg"
                 mb="0rem"
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                }}
               >
-                <Text fw={700} fz="md" c="red.8" mb="0.5rem">
+                <Text fw={700} fz="md" mb="0.5rem">
                   {friend.name}
                 </Text>
-                <ActionIcon color="red" size="lg"></ActionIcon>
+                <Tooltip label="Accept Invite" position="bottom" withArrow>
+                <ActionIcon color="green" size="lg" ml="xs"
+                onClick={() => acceptInvite(friend)}
+                >
+                  <IconUserCheck />
+                </ActionIcon>
+                </Tooltip>
+                <Tooltip label="Reject Invite" position="bottom" withArrow>
+                <ActionIcon color="red" size="lg" ml="xs"
+                onClick={() => rejectInvite(friend)}
+                >
+                  <IconUserX />
+                </ActionIcon>
+                </Tooltip>
               </Paper>
             ))}
           </Stack>

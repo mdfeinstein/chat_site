@@ -26,7 +26,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   getNewMessagesUrl
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
-  console.log("last initial message: ", initialMessages[initialMessages.length - 1]);
+  // console.log("last initial message: ", initialMessages[initialMessages.length - 1]);
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
     initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0
   );
@@ -77,12 +77,13 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   };
 
   const fetchNewMessagesOnce = async () => {
-    console.log("fetch with last message number: ", lastMessageNumberRef.current);
+    if (chatId===-1) return;
+    // console.log("fetch with last message number: ", lastMessageNumberRef.current);
     const response = await fetch(
       `${getNewMessagesUrl}?chat_pk=${chatId}&last_message_number=${lastMessageNumberRef.current}`
     );
     const data = await response.json();
-    console.log("checking last message number before setting: ", data.last_message_number);
+    // console.log("checking last message number before setting: ", data.last_message_number);
     if (data.last_message_number > lastMessageNumberRef.current) {
       setLastMessageNumber(data.last_message_number);
     }

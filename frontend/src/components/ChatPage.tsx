@@ -54,21 +54,20 @@ const ChatPage: React.FC<ChatPageProps> = ({
 
   const getChatData = async () => {
     setInitialMessagesLoaded(false);
-    const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
-    const data = await response.json();
-    setChatName(data.chat_name);
-    setInitialMessages(data.messages);
-    setInitialMessagesLoaded(true);
+    if (chatId!==-1) {
+      const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
+      const data = await response.json();
+      setChatName(data.chat_name);
+      setInitialMessages(data.messages);
+      setInitialMessagesLoaded(true);
+    }
+    else {
+      setChatName("No Chats Found. Start One in the Friends Tab!");
+
+    }
   };
 
   const setChatDetailsFunc = async (chatId: number) => {
-    // setInitialMessagesLoaded(false);
-    // const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
-    // const data = await response.json();
-    // setChatName(data.chat_name);
-    // setInitialMessages(data.messages);
-    // setChatId(chatId);
-    // setInitialMessagesLoaded(true);
     setChatId(chatId);
   };
 

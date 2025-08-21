@@ -21,4 +21,6 @@ export const urls = {
   "get_chat_data": "get_chat_data",
   "get_chats_with_history": "get_chats_with_history",
   "cancel_request": "cancel_request",
+  "accept_invite": "accept_invite",
+  "reject_invite": "reject_invite",
 } as const;

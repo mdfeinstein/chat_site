@@ -100,7 +100,7 @@ const CollapsibleNavBar = ({
       selectedChatId={selectedChatId}
     />
   );
-  const friendsElement = <FriendsSection friendsData={friendData!} />;
+  const friendsElement = <FriendsSection />;
   useEffect(() => {
     getChatsData();
   }, []);
