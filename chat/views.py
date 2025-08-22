@@ -104,11 +104,30 @@ def chat_page(request):
 def add_chat(request):
     if request.method == "POST":
         chat_user = ChatUser.objects.get(user=request.user)
-        form = ChatForm(chat_user, request.POST)
-        if form.is_valid():
-            chat = form.save()
+        try:
+            # data is a list of user names
+            data = json.loads(request.body)
+        except json.JSONDecodeError:
+            return JsonResponse(
+                {"success": False, "message": "Invalid JSON"},
+                status=400,
+            )
+        chat_users = ChatUser.objects.filter(
+            user__username__in=data["requested_user_names"]
+        )
+        chat_users = [chat_user for chat_user in chat_users]
+        chat_users.append(chat_user)
+        print(chat_users)
+        new_chat = Chat.objects.create()
+        new_chat.users.set(chat_users)
+        new_chat.save()
+        return JsonResponse(
+            {"success": True, "message": "Chat added successfully"}
+        )
 
-    return HTTPResponseRedirect(reverse("home"))
+    return JsonResponse(
+        {"success": True, "message": "Chat added successfully"}
+    )
 
 
 def send_message(request):

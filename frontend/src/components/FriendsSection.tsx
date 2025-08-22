@@ -9,7 +9,8 @@ import {
   Menu,
   Button,
   Tooltip,
-  Box
+  Box,
+  Chip
 } from "@mantine/core";
 import { use, useEffect, useState } from "react";
 import React from "react";
@@ -18,7 +19,8 @@ import {
   IconXboxXFilled,
   IconUserCheck,
   IconUserX,
-  IconSend2
+  IconSend2,
+  IconMessageCirclePlus
 } from "@tabler/icons-react";
 import { urls } from "../urls";
 import { useChatPageContext } from "./ChatPage";
@@ -91,6 +93,21 @@ const FriendsSection = () => {
     getRequestableUsers();
   }, []);
 
+  const add_chat = async (user_names: string[]) => {
+    const response = await fetch(urls.add_chat, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "X-CSRFToken": csrfToken,
+      },
+      body: JSON.stringify({ requested_user_names: user_names }),
+    });
+    const data = await response.json();
+    console.log(data);
+    await refreshFriendsSection();
+  };
+
+  const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const friendsElement = (
     <Accordion.Item key="friends" value="friends">
       <Accordion.Control>
@@ -101,46 +118,58 @@ const FriendsSection = () => {
       <Accordion.Panel>
         <ScrollArea h={400}>
           <Stack>
+            <Chip.Group multiple value={selectedFriends} onChange={setSelectedFriends}>
             {onlineFriends.map((friend: FriendData) => (
-              <Paper
-                key={friend.name}
-                shadow="xl"
-                p="md"
-                withBorder
-                radius="lg"
-                mb="0rem"
+              <Box
                 style={{
-                  display: "flex",
-                  flexDirection: "row",
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}
+                >
+              <IconInnerShadowTopRightFilled color="green"/>
+              <Chip
+                key={friend.name}
+                value={friend.name}
+                radius="xs"
+                width="100%"
               >
-                <IconInnerShadowTopRightFilled color="green"/>
                 <Text fw={700} fz="md" mb="0.5rem">
                   {friend.name}
                 </Text>
-              </Paper>
+              </Chip>
+            </Box>
             ))}
             {offlineFriends.map((friend: FriendData) => (
-              <Paper
-                key={friend.name}
-                shadow="xl"
-                p="md"
-                withBorder
-                radius="lg"
-                mb="0rem"
+              <Box
                 style={{
-                  display: "flex",
-                  flexDirection: "row",
-                }}
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+              <IconInnerShadowTopRightFilled color="red"/>
+              <Chip
+                key={friend.name}
+                value={friend.name}
+                radius="xs"
               >
-                <IconInnerShadowTopRightFilled color="red"/>
                 <Text fw={700} fz="md" mb="0.5rem">
                   {friend.name}
                 </Text>
-              </Paper>
+              </Chip>
+            </Box>
             ))}
+            </Chip.Group>
           </Stack>
         </ScrollArea>
+        <Button
+          leftSection={<IconMessageCirclePlus />}
+          onClick={() => add_chat(selectedFriends)}
+          >
+            Create Chat
+        </Button>
       </Accordion.Panel>
     </Accordion.Item>
   );
