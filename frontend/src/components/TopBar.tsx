@@ -37,13 +37,13 @@ const TopBar: React.FC<TopBarProps> = ({
         marginBottom: '0rem',
       }}
     >
-      <Button 
+      {/* <Button 
         variant="filled" 
         color="blue" 
         onClick={() => window.location.href = homeUrl}
       >
         Home
-      </Button>
+      </Button> */}
 
       <Title 
         order={2} 
