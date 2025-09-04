@@ -6,6 +6,9 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
+import type {paths} from "./../../../src/api/types";
+
+type GetChatDataResponse = paths['/api/get_chat_data']['get']['responses']['200']['content']['application/json'];
 
 interface ChatPageProps {
   chatId_initial: number | string;
@@ -55,9 +58,9 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const getChatData = async () => {
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
-      const response = await fetch(getChatDataUrl+"?chat_id="+chatId);
-      const data = await response.json();
-      setChatName(data.chat_name);
+      const response = await fetch('/api/get_chat_data'+"?chat_id="+chatId);
+      const data : GetChatDataResponse = await response.json();
+      setChatName("Chat with: " + data.chat_name);
       setInitialMessages(data.messages);
       setInitialMessagesLoaded(true);
     }

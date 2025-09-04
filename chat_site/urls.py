@@ -16,12 +16,30 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from django.contrib.auth import views as auth_views
 import chat.views
+import chat.drf_views
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/swagger/",
+        SpectacularSwaggerView.as_view(),
+        name="swagger",
+    ),
+    path("api/redoc/", SpectacularRedocView.as_view(), name="redoc"),
+    path(
+        "api/get_chat_data",
+        chat.drf_views.get_chat_data,
+        name="get_chat_data_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(
