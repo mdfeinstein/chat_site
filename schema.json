@@ -3,7 +3,7 @@ info:
   title: ''
   version: 0.0.0
 paths:
-  /api/get_chat_data:
+  /api/get_chat_data/:
     get:
       operationId: api_get_chat_data_retrieve
       description: Get chat data for a specific chat
@@ -19,6 +19,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ChatData'
+          description: ''
+  /api/get_chat_data/{chat_id}/:
+    get:
+      operationId: api_get_chat_data_retrieve_2
+      description: Get chat data for a specific chat
+      parameters:
+      - in: path
+        name: chat_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatData'
+          description: ''
+  /api/get_chats_with_history/:
+    get:
+      operationId: api_get_chats_with_history_retrieve
+      description: Get users chats with recent messages
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatsWithHistory'
           description: ''
   /api/schema/:
     get:
@@ -183,6 +223,30 @@ components:
       - chat_id
       - chat_name
       - messages
+    ChatWithHistory:
+      type: object
+      properties:
+        chat_id:
+          type: integer
+        chat_name:
+          type: string
+        last_messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+      required:
+      - chat_id
+      - chat_name
+      - last_messages
+    ChatsWithHistory:
+      type: object
+      properties:
+        chats:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatWithHistory'
+      required:
+      - chats
     Message:
       type: object
       properties:
@@ -200,6 +264,7 @@ components:
           type: string
         messageNumber:
           type: integer
+          readOnly: true
       required:
       - createdAt
       - id

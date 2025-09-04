@@ -8,7 +8,8 @@ import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
 import type {paths} from "./../../../src/api/types";
 
-type GetChatDataResponse = paths['/api/get_chat_data']['get']['responses']['200']['content']['application/json'];
+type GetChatDataResponse = paths['/api/get_chat_data/{chat_id}/']['get']['responses']['200']['content']['application/json'];
+
 
 interface ChatPageProps {
   chatId_initial: number | string;
@@ -19,7 +20,6 @@ interface ChatPageProps {
   sendMessageUrl: string;
   getChatsUrl: string;
   getFriendInfoUrl: string;
-  getChatDataUrl: string;
   csrfToken: string;
 }
 
@@ -38,9 +38,8 @@ const ChatPage: React.FC<ChatPageProps> = ({
   logoutUrl,
   getNewMessagesUrl,
   sendMessageUrl,
-  getChatsUrl,
+  // getChatsUrl,
   getFriendInfoUrl,
-  getChatDataUrl,
   csrfToken,
 }) => {
   if (typeof chatId_initial === "string") {
@@ -58,7 +57,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const getChatData = async () => {
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
-      const response = await fetch('/api/get_chat_data'+"?chat_id="+chatId);
+      const response = await fetch('/api/get_chat_data'+"/"+chatId);
       const data : GetChatDataResponse = await response.json();
       setChatName("Chat with: " + data.chat_name);
       setInitialMessages(data.messages);
@@ -111,7 +110,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         <CollapsibleNavBar
           isCollapsed={isNavBarCollapsed}
           collapser={toggleNavBar}
-          getChatsUrl={getChatsUrl}
+          // getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
           setChatDetailsFunc={setChatDetailsFunc}
           selectedChatId={chatId}

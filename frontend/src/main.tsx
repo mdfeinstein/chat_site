@@ -95,7 +95,7 @@ const mountChatPage = () => {
           sendMessageUrl={sendMessageUrl}
           getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
-          getChatDataUrl={getChatDataUrl}
+          // getChatDataUrl={getChatDataUrl}
           csrfToken={csrfToken}
         />
       </StrictMode>

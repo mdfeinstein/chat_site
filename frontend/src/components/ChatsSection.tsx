@@ -1,6 +1,9 @@
 import { Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import React from "react";
+import type { paths } from "../../../src/api/types";
+
+type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json']['chats'][0];
 
 
 export interface ChatData {
@@ -26,7 +29,7 @@ const formatDate = (createdAt: string) => {
 };
 
 interface ChatsSectionProps {
-  chatData: ChatData[];
+  chatData: GetChatWithHistoryResponse[];
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }
@@ -50,12 +53,13 @@ const ChatsSection = ({
     >
       <Stack
       >
+
         {chatData.map((chat) => (
           <Paper
-            onMouseEnter={() => setHoveredChatId(chat.id)}
+            onMouseEnter={() => setHoveredChatId(chat.chat_id)}
             onMouseLeave={() => setHoveredChatId(null)}
-            onClick={setChatDetailsFunc.bind(null, chat.id)}
-            key={chat.id}
+            onClick={setChatDetailsFunc.bind(null, chat.chat_id)}
+            key={chat.chat_id}
             shadow="xl"
             p="md"
             withBorder
@@ -63,23 +67,23 @@ const ChatsSection = ({
             mb="0rem"
             style={{
               cursor: "pointer",
-              backgroundColor: chat.id === selectedChatId ? "#f4adadff" :  hoveredChatId === chat.id ? "#fff2f2" : "#ffffff",
+              backgroundColor: chat.chat_id === selectedChatId ? "#f4adadff" :  hoveredChatId === chat.chat_id ? "#fff2f2" : "#ffffff",
             }}
           >
               
             <Text fw={700} fz="lg" c="red.8" mb="0.5rem">
-              {chat.name}
+              {chat.chat_name}
             </Text>
               <ScrollArea
               h={100}
               >
-              {chat.lastMessages.map((_, i) => (
+              {chat.last_messages.map((msg) => (
                 <>
                 <Text fz="sm" c="dimmed">
-                  {chat.lastMessagesAuthors[i]} • {formatDate(chat.lastMessagesDates[i])}
+                  {msg.sender} • {formatDate(msg.createdAt)}
                 </Text>
                 <Text fz="md" c="dimmed">
-                  {chat.lastMessages[i]}
+                  {msg.text}
                 </Text>
                 </>
 

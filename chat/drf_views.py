@@ -8,10 +8,12 @@ from .serializers import (
     MessageSerializer,
     ChatSerializer,
     ChatDataSerializer,
+    ChatWithHistorySerializer,
+    ChatsWithHistorySerializer,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
-from django.db.models import Q
+from django.db.models import Q, Max
 from django.db.models.functions import Lower
 import json
 from drf_spectacular.utils import extend_schema, OpenApiParameter
@@ -24,6 +26,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 )
 @api_view(["GET"])
 def get_chat_data(request, chat_id=None):
+    print(chat_id)
     if chat_id is None:
         chat_id = request.GET.get("chat_id")
     chat_user = ChatUser.objects.get(user=request.user)
@@ -39,3 +42,31 @@ def get_chat_data(request, chat_id=None):
     messages = chat.messages.order_by("message_number")
     serializer = ChatDataSerializer.from_chat(chat, messages)
     return Response(serializer.data)
+
+
+@extend_schema(
+    description="Get users chats with recent messages",
+    responses={200: ChatsWithHistorySerializer},
+    #  parameters=[OpenApiParameter(name="chat_id", type=int, location=OpenApiParameter.QUERY)]
+)
+@api_view(["GET"])
+def get_chats_with_history(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chats = (
+        Chat.objects.filter(users=chat_user)
+        .annotate(last_message_time=Max("messages__createdAt"))
+        .order_by("-last_message_time")
+    )
+    chats_data = []
+    for chat in chats:
+        last_messages = chat.messages.order_by("-message_number")[:10]
+        chat_serializer = (
+            ChatWithHistorySerializer.from_chat_and_last_messages(
+                chat, last_messages
+            )
+        )
+        chats_data.append(chat_serializer.data)
+
+    return Response(
+        ChatsWithHistorySerializer({"chats": chats_data}).data
+    )

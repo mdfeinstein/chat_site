@@ -27,6 +27,10 @@ import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
 import type { ChatData } from "./ChatsSection";
 import type { FriendData } from "./FriendsSection";
+import type { paths } from "../../../src/api/types";
+
+type GetChatsWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json'];
+type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json']['chats'][0];
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;
@@ -65,22 +69,23 @@ const ArrowedMarginTab: React.FC<{
 const CollapsibleNavBar = ({
   isCollapsed,
   collapser,
-  getChatsUrl,
+  // getChatsUrl,
   getFriendInfoUrl,
   setChatDetailsFunc,
   selectedChatId,
 }: {
   isCollapsed: boolean;
   collapser: () => void;
-  getChatsUrl: string;
+  // getChatsUrl: string;
   getFriendInfoUrl: string;
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }) => {
   const getChatsData = async () => {
-    const response = await fetch(getChatsUrl);
-    const data = await response.json();
-    setChatData(data);
+    const response = await fetch('/api/get_chats_with_history/');
+    const data : GetChatsWithHistoryResponse = await response.json();
+    const chats : GetChatWithHistoryResponse[] = data.chats;
+    setChatData(chats);
   };
 
   const getFriendsData = async () => {
@@ -90,7 +95,7 @@ const CollapsibleNavBar = ({
   };
 
   const [section, setSection] = useState<"Chats" | "Friends">("Chats");
-  const [chatData, setChatData] = useState<ChatData[]>([]);
+  const [chatData, setChatData] = useState<GetChatWithHistoryResponse[]>([]);
   const [friendData, setFriendData] = useState<FriendData[]>([]);
 
   const chatsElement = (
@@ -113,15 +118,6 @@ const CollapsibleNavBar = ({
   // const chatsElement = <ChatsSection chatData={chatData!} />;
   // const friendsElement = <FriendsSection friendData={friendData!} />;
 
-  const links = data?.map((item) => (
-    <NavLink
-      // key={item.id}
-      label={item.name}
-      component="a"
-      // href={item.link}
-      onClick={(event) => event.preventDefault()}
-    />
-  ));
 
   return (
     <Box style={{ display: "flex", flexDirection: "row" }}>

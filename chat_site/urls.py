@@ -35,10 +35,21 @@ urlpatterns = [
         name="swagger",
     ),
     path("api/redoc/", SpectacularRedocView.as_view(), name="redoc"),
+    # Make chat_id optional by using a path converter with default value
     path(
-        "api/get_chat_data",
+        "api/get_chat_data/",
+        chat.drf_views.get_chat_data,
+        name="get_chat_data_api_no_id",
+    ),
+    path(
+        "api/get_chat_data/<int:chat_id>/",
         chat.drf_views.get_chat_data,
         name="get_chat_data_api",
+    ),
+    path(
+        "api/get_chats_with_history/",
+        chat.drf_views.get_chats_with_history,
+        name="get_chats_with_history_api",
     ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),

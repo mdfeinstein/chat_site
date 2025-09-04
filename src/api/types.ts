@@ -4,7 +4,7 @@
  */
 
 export interface paths {
-    "/api/get_chat_data": {
+    "/api/get_chat_data/": {
         parameters: {
             query?: never;
             header?: never;
@@ -13,6 +13,40 @@ export interface paths {
         };
         /** @description Get chat data for a specific chat */
         get: operations["api_get_chat_data_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/get_chat_data/{chat_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get chat data for a specific chat */
+        get: operations["api_get_chat_data_retrieve_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/get_chats_with_history/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get users chats with recent messages */
+        get: operations["api_get_chats_with_history_retrieve"];
         put?: never;
         post?: never;
         delete?: never;
@@ -50,13 +84,21 @@ export interface components {
             chat_name: string;
             messages: components["schemas"]["Message"][];
         };
+        ChatWithHistory: {
+            chat_id: number;
+            chat_name: string;
+            last_messages: components["schemas"]["Message"][];
+        };
+        ChatsWithHistory: {
+            chats: components["schemas"]["ChatWithHistory"][];
+        };
         Message: {
             readonly id: number;
             readonly sender: string;
             /** Format: date-time */
             readonly createdAt: string;
             text: string;
-            messageNumber: number;
+            readonly messageNumber: number;
         };
     };
     responses: never;
@@ -82,6 +124,46 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatData"];
+                };
+            };
+        };
+    };
+    api_get_chat_data_retrieve_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                chat_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatData"];
+                };
+            };
+        };
+    };
+    api_get_chats_with_history_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatsWithHistory"];
                 };
             };
         };

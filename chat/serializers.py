@@ -16,7 +16,9 @@ class FriendsListSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.StringRelatedField()
-    messageNumber = serializers.IntegerField(source="message_number")
+    messageNumber = serializers.IntegerField(
+        source="message_number", read_only=True
+    )
 
     class Meta:
         model = Message
@@ -56,5 +58,22 @@ class ChatDataSerializer(serializers.Serializer):
             }
         )
 
-    # class Meta:
-    #     fields = ["chat_id", "chat_name", "messages"]
+
+class ChatWithHistorySerializer(serializers.Serializer):
+    chat_id = serializers.IntegerField()
+    chat_name = serializers.CharField()
+    last_messages = MessageSerializer(many=True)
+
+    @classmethod
+    def from_chat_and_last_messages(cls, chat, last_messages):
+        return cls(
+            {
+                "chat_id": chat.pk,
+                "chat_name": str(chat),
+                "last_messages": last_messages,
+            }
+        )
+
+
+class ChatsWithHistorySerializer(serializers.Serializer):
+    chats = ChatWithHistorySerializer(many=True)
