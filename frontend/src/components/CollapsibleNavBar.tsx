@@ -27,10 +27,9 @@ import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
 import type { ChatData } from "./ChatsSection";
 import type { FriendData } from "./FriendsSection";
-import type { paths } from "../../../src/api/types";
-
-type GetChatsWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json'];
-type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json']['chats'][0];
+import { getChatData, getChatsWithHistory } from "../api/api";
+import type { GetChatWithHistoryResponse, 
+  GetChatsWithHistoryResponse } from "../api/api";
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;

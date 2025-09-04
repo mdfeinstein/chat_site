@@ -6,10 +6,8 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-import type {paths} from "./../../../src/api/types";
-
-type GetChatDataResponse = paths['/api/get_chat_data/{chat_id}/']['get']['responses']['200']['content']['application/json'];
-
+import { getChatData } from "../api/api";
+import type { GetChatDataResponse } from "../api/api";
 
 interface ChatPageProps {
   chatId_initial: number | string;
