@@ -76,6 +76,12 @@ const FriendsSection = () => {
 
   useEffect(() => {
     refreshFriendsSection();
+    const interval = setInterval(() => {
+    refreshFriendsSection();
+  }, 2000);
+
+  return () => clearInterval(interval); // cleanup on unmount
+  
   }, []);
 
   const add_chat = async (user_names: string[]) => {
