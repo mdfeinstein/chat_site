@@ -11,6 +11,8 @@ const API_PATHS = {
   getFriendData: '/api/get_friend_data/',
   sendFriendRequest: '/api/send_request/',
   cancelFriendRequest: '/api/cancel_request/',
+  acceptFriendRequest: '/api/accept_friend_request/',
+  rejectFriendRequest: '/api/reject_friend_request/',
 }
 
 
@@ -53,6 +55,32 @@ export const sendFriendRequest = async (data: ChatUserMinimal, csrfToken: string
 export type CancelFriendRequestRequest = paths['/api/cancel_request/']['post']['requestBody']['content']['application/json'];
 export const cancelFriendRequest = async (data: CancelFriendRequestRequest, csrfToken: string) => {
   const response = await fetch('/api/cancel_request/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
+
+export const acceptFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+  const response = await fetch('/api/accept_friend_request/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
+
+export const rejectFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+  const response = await fetch('/api/reject_friend_request/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',

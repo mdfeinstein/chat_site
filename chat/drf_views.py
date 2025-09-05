@@ -2,6 +2,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from .models import ChatUser, Message, Chat
+from django.db import transaction
 from .serializers import (
     SuccessResponseSerializer,
     ErrorResponseSerializer,
@@ -131,9 +132,10 @@ def send_request(request):
                 chat_user
             )
             requested_user.friends_list.friends.add(chat_user)
-            requested_user.friends_list.save()
             chat_user.friends_list.friends.add(requested_user)
-            chat_user.friends_list.save()
+            with transaction.atomic():
+                chat_user.friends_list.save()
+                requested_user.friends_list.save()
             return Response(
                 {
                     "success": True,
@@ -182,6 +184,81 @@ def cancel_request(request):
         chat_user.friends_list.save()
         return Response(
             {"success": True, "message": "Request cancelled"},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@extend_schema(
+    description="Accept a friend request",
+    request=ChatUserMinimalSerializer,
+    responses={
+        200: SuccessResponseSerializer,
+        400: ErrorResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+def accept_friend_request(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    serializer = ChatUserMinimalSerializer(data=request.data)
+    if serializer.is_valid():
+        requesting_user = ChatUser.objects.get(
+            user__username=serializer.data.get("username")
+        )
+        if requesting_user is None:
+            return Response(
+                {"success": False, "message": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        chat_user.friends_list.friends.add(requesting_user)
+        requesting_user.friends_list.requested_users.remove(chat_user)
+        requesting_user.friends_list.friends.add(chat_user)
+        with transaction.atomic():
+            chat_user.friends_list.save()
+            requesting_user.friends_list.save()
+
+        return Response(
+            {"success": True, "message": "Friend request accepted"},
+            status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@extend_schema(
+    description="Reject a friend request",
+    request=ChatUserMinimalSerializer,
+    responses={
+        200: SuccessResponseSerializer,
+        400: ErrorResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+def reject_friend_request(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    serializer = ChatUserMinimalSerializer(data=request.data)
+    if serializer.is_valid():
+        requested_user = ChatUser.objects.get(
+            user__username=serializer.data.get("username")
+        )
+        if requested_user is None:
+            return Response(
+                {"success": False, "message": "User not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        requested_user.friends_list.requested_users.remove(chat_user)
+        requested_user.friends_list.save()
+        return Response(
+            {"success": True, "message": "Friend request rejected"},
             status=status.HTTP_200_OK,
         )
     else:

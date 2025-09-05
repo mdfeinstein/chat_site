@@ -66,6 +66,16 @@ urlpatterns = [
         chat.drf_views.cancel_request,
         name="cancel_request_api",
     ),
+    path(
+        "api/accept_friend_request/",
+        chat.drf_views.accept_friend_request,
+        name="accept_friend_request_api",
+    ),
+    path(
+        "api/reject_friend_request/",
+        chat.drf_views.reject_friend_request,
+        name="reject_friend_request_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(

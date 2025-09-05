@@ -3,6 +3,47 @@ info:
   title: ''
   version: 0.0.0
 paths:
+  /api/accept_friend_request/:
+    post:
+      operationId: api_accept_friend_request_create
+      description: Accept a friend request
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/cancel_request/:
     post:
       operationId: api_cancel_request_create
@@ -117,6 +158,47 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FriendData'
+          description: ''
+  /api/reject_friend_request/:
+    post:
+      operationId: api_reject_friend_request_create
+      description: Reject a friend request
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
           description: ''
   /api/schema/:
     get:

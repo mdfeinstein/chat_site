@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/accept_friend_request/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Accept a friend request */
+        post: operations["api_accept_friend_request_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/cancel_request/": {
         parameters: {
             query?: never;
@@ -83,6 +100,23 @@ export interface paths {
         get: operations["api_get_friend_data_retrieve"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/reject_friend_request/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Reject a friend request */
+        post: operations["api_reject_friend_request_create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -185,6 +219,47 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    api_accept_friend_request_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatUserMinimal"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatUserMinimal"];
+                "multipart/form-data": components["schemas"]["ChatUserMinimal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     api_cancel_request_create: {
         parameters: {
             query?: never;
@@ -300,6 +375,47 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FriendData"];
+                };
+            };
+        };
+    };
+    api_reject_friend_request_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatUserMinimal"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatUserMinimal"];
+                "multipart/form-data": components["schemas"]["ChatUserMinimal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

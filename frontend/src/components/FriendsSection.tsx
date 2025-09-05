@@ -10,7 +10,7 @@ import {
   Button,
   Tooltip,
   Box,
-  Chip
+  Chip,
 } from "@mantine/core";
 import { use, useEffect, useState, useRef } from "react";
 import React from "react";
@@ -20,12 +20,17 @@ import {
   IconUserCheck,
   IconUserX,
   IconSend2,
-  IconMessageCirclePlus
+  IconMessageCirclePlus,
 } from "@tabler/icons-react";
 
 import { getFriendData } from "../api/api";
 import type { GetFriendDataResponse, ChatUserMinimal } from "../api/api";
-import { sendFriendRequest,cancelFriendRequest } from "../api/api";
+import {
+  sendFriendRequest,
+  cancelFriendRequest,
+  acceptFriendRequest,
+  rejectFriendRequest,
+} from "../api/api";
 import { useChatPageContext } from "./ChatPage";
 import { urls } from "../urls";
 
@@ -44,14 +49,17 @@ const FriendsSection = () => {
   const [requestableUsers, setRequestableUsers] = useState<
     RequestableUserData[]
   >([]);
-  const [friendData, setFriendData] = useState<GetFriendDataResponse>(
-    {"online_friends": [], "offline_friends": [], "requested_users": [], "invited_by": []}
-  );
+  const [friendData, setFriendData] = useState<GetFriendDataResponse>({
+    online_friends: [],
+    offline_friends: [],
+    requested_users: [],
+    invited_by: [],
+  });
 
- const updateFriendData = async () => {
+  const updateFriendData = async () => {
     const data = await getFriendData();
     setFriendData(data);
- };
+  };
 
   const { csrfToken } = useChatPageContext();
 
@@ -95,83 +103,87 @@ const FriendsSection = () => {
       <Accordion.Panel>
         <ScrollArea h={400}>
           <Stack>
-            <Chip.Group multiple value={selectedFriends} onChange={setSelectedFriends}>
-            {friendData.online_friends.map((friend) => (
-              <Box
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
+            <Chip.Group
+              multiple
+              value={selectedFriends}
+              onChange={setSelectedFriends}
+            >
+              {friendData.online_friends.map((friend) => (
+                <Box
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
                 >
-              <IconInnerShadowTopRightFilled color="green"/>
-              <Chip
-                key={friend.username}
-                value={friend.username}
-                radius="xs"
-                width="100%"
-              >
-                <Text fw={700} fz="md" mb="0.5rem">
-                  {friend.username}
-                </Text>
-              </Chip>
-            </Box>
-            ))}
-            {friendData.offline_friends.map((friend) => (
-              <Box
-                style={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-              <IconInnerShadowTopRightFilled color="red"/>
-              <Chip
-                key={friend.username}
-                value={friend.username}
-                radius="xs"
-              >
-                <Text fw={700} fz="md" mb="0.5rem">
-                  {friend.username}
-                </Text>
-              </Chip>
-            </Box>
-            ))}
+                  <IconInnerShadowTopRightFilled color="green" />
+                  <Chip
+                    key={friend.username}
+                    value={friend.username}
+                    radius="xs"
+                    width="100%"
+                  >
+                    <Text fw={700} fz="md" mb="0.5rem">
+                      {friend.username}
+                    </Text>
+                  </Chip>
+                </Box>
+              ))}
+              {friendData.offline_friends.map((friend) => (
+                <Box
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <IconInnerShadowTopRightFilled color="red" />
+                  <Chip
+                    key={friend.username}
+                    value={friend.username}
+                    radius="xs"
+                  >
+                    <Text fw={700} fz="md" mb="0.5rem">
+                      {friend.username}
+                    </Text>
+                  </Chip>
+                </Box>
+              ))}
             </Chip.Group>
           </Stack>
         </ScrollArea>
         <Button
           leftSection={<IconMessageCirclePlus />}
           onClick={() => add_chat(selectedFriends)}
-          >
-            Create Chat
+        >
+          Create Chat
         </Button>
       </Accordion.Panel>
     </Accordion.Item>
   );
 
-
   const sendRequest = async (friend_name: string) => {
-    const friend : ChatUserMinimal = {username: friend_name};
+    const friend: ChatUserMinimal = { username: friend_name };
     await sendFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
   const cancelRequest = async (friend_name: string) => {
-    const friend : ChatUserMinimal = {username: friend_name};
+    const friend: ChatUserMinimal = { username: friend_name };
     await cancelFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
 
-
-  const [selectedUser, setSelectedUser] = useState<RequestableUserData | null>(null);
+  const [selectedUser, setSelectedUser] = useState<RequestableUserData | null>(
+    null
+  );
 
   const [sendRequestMenuOpened, setSendRequestMenuOpened] =
     useState<boolean>(false);
 
-  
   const requestsElement = (
     <Accordion.Item key="requests" value="requests">
       <Accordion.Control>
@@ -180,43 +192,43 @@ const FriendsSection = () => {
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
-        <Box 
+        <Box
           style={{
-            display : 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: '0.5rem'
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "0.5rem",
           }}
         >
-        <Select
-          placeholder="Select User"
-          data={requestableUsers.map(
-            (user: RequestableUserData) => user.name
-          )}
-          value={selectedUser?.name}
-          defaultValue = {null}
-          searchable
-          onChange={(value) =>
-            setSelectedUser(
-              requestableUsers.find(
-                (user: RequestableUserData) => user.name === value!
-              ) || null
-            )
-          }
-        />
-        <Tooltip label="Send Request" position="bottom" withArrow>
-        <ActionIcon
-          onClick={() => {
-            if (selectedUser !== null) {
-              sendRequest(selectedUser.name);
+          <Select
+            placeholder="Select User"
+            data={requestableUsers.map(
+              (user: RequestableUserData) => user.name
+            )}
+            value={selectedUser?.name ?? null}
+            defaultValue={null}
+            searchable
+            onChange={(value) =>
+              setSelectedUser(
+                requestableUsers.find(
+                  (user: RequestableUserData) => user.name === value!
+                ) || null
+              )
             }
-            setSendRequestMenuOpened(false);
-            setSelectedUser(null);
-          }}
-        >
-          <IconSend2/>
-        </ActionIcon>
-        </Tooltip>
+          />
+          <Tooltip label="Send Request" position="bottom" withArrow>
+            <ActionIcon
+              onClick={() => {
+                if (selectedUser !== null) {
+                  sendRequest(selectedUser.name);
+                }
+                setSendRequestMenuOpened(false);
+                setSelectedUser(null);
+              }}
+            >
+              <IconSend2 />
+            </ActionIcon>
+          </Tooltip>
         </Box>
         <ScrollArea h={400}>
           <Stack>
@@ -237,14 +249,16 @@ const FriendsSection = () => {
                   {friend.username}
                 </Text>
                 <Tooltip label="Cancel Request" position="bottom" withArrow>
-                <ActionIcon
-                  color="red"
-                  size="lg"
-                  ml="md"
-                  onClick={() => cancelRequest(friend.username)}
-                >
-                  <IconXboxXFilled />
-                </ActionIcon>
+                  <ActionIcon
+                    color="red"
+                    size="lg"
+                    ml="md"
+                    onClick={(e) => {
+                      cancelRequest(friend.username);
+                    }}
+                  >
+                    <IconXboxXFilled />
+                  </ActionIcon>
                 </Tooltip>
               </Paper>
             ))}
@@ -254,31 +268,15 @@ const FriendsSection = () => {
     </Accordion.Item>
   );
 
-  const acceptInvite = async (friend: FriendData) => {
-    const response = await fetch(urls.accept_invite, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify({ requesting_user_name: friend.name }),
-    });
-    const data = await response.json();
-    console.log(data);
+  const acceptRequest = async (friend_name: string) => {
+    const friend: ChatUserMinimal = { username: friend_name };
+    await acceptFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
-  const rejectInvite = async (friend: FriendData) => {
-    const response = await fetch(urls.reject_invite, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify({ requesting_user_name: friend.name }),
-    });
-    const data = await response.json();
-    console.log(data);
+  const rejectRequest = async (friend_name: string) => {
+    const friend: ChatUserMinimal = { username: friend_name };
+    await rejectFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
@@ -309,18 +307,24 @@ const FriendsSection = () => {
                   {friend.username}
                 </Text>
                 <Tooltip label="Accept Invite" position="bottom" withArrow>
-                <ActionIcon color="green" size="lg" ml="xs"
-                // onClick={() => acceptInvite(friend)}
-                >
-                  <IconUserCheck />
-                </ActionIcon>
+                  <ActionIcon
+                    color="green"
+                    size="lg"
+                    ml="xs"
+                    onClick={() => acceptRequest(friend.username)}
+                  >
+                    <IconUserCheck />
+                  </ActionIcon>
                 </Tooltip>
                 <Tooltip label="Reject Invite" position="bottom" withArrow>
-                <ActionIcon color="red" size="lg" ml="xs"
-                // onClick={() => rejectInvite(friend)}
-                >
-                  <IconUserX />
-                </ActionIcon>
+                  <ActionIcon
+                    color="red"
+                    size="lg"
+                    ml="xs"
+                    onClick={() => rejectRequest(friend.username)}
+                  >
+                    <IconUserX />
+                  </ActionIcon>
                 </Tooltip>
               </Paper>
             ))}
