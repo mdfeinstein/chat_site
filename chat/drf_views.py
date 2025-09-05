@@ -124,7 +124,7 @@ def send_request(request):
                 status=status.HTTP_404_NOT_FOUND,
             )
         # check if requested_user requested chat_user and make both friends if so
-        if requested_user.freinds_list.requested_users.filter(
+        if requested_user.friends_list.requested_users.filter(
             pk=chat_user.pk
         ).exists():
             requested_user.friends_list.requested_users.remove(

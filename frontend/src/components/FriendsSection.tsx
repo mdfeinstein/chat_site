@@ -25,7 +25,7 @@ import {
 
 import { getFriendData } from "../api/api";
 import type { GetFriendDataResponse, ChatUserMinimal } from "../api/api";
-import { cancelFriendRequest } from "../api/api";
+import { sendFriendRequest,cancelFriendRequest } from "../api/api";
 import { useChatPageContext } from "./ChatPage";
 import { urls } from "../urls";
 
@@ -151,17 +151,10 @@ const FriendsSection = () => {
     </Accordion.Item>
   );
 
-  const requestUser = async (user: RequestableUserData) => {
-    const response = await fetch(urls.request_friend, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify({ requested_user_pk: user.pk }),
-    });
-    const data = await response.json();
-    console.log(data);
+
+  const sendRequest = async (friend_name: string) => {
+    const friend : ChatUserMinimal = {username: friend_name};
+    await sendFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
@@ -170,6 +163,8 @@ const FriendsSection = () => {
     await cancelFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
+
+
 
   const [selectedUser, setSelectedUser] = useState<RequestableUserData | null>(null);
 
@@ -213,7 +208,7 @@ const FriendsSection = () => {
         <ActionIcon
           onClick={() => {
             if (selectedUser !== null) {
-              requestUser(selectedUser);
+              sendRequest(selectedUser.name);
             }
             setSendRequestMenuOpened(false);
             setSelectedUser(null);
