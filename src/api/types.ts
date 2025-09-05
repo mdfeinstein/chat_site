@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/api/cancel_request/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Cancel a friend request */
+        post: operations["api_cancel_request_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/get_chat_data/": {
         parameters: {
             query?: never;
@@ -92,6 +109,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/send_request/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send a friend request */
+        post: operations["api_send_request_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -103,9 +137,12 @@ export interface components {
         };
         ChatUser: {
             readonly id: number;
-            user: number;
+            username: string;
             loggedIn?: boolean;
             accountActive?: boolean;
+        };
+        ChatUserMinimal: {
+            username: string;
         };
         ChatWithHistory: {
             chat_id: number;
@@ -114,6 +151,11 @@ export interface components {
         };
         ChatsWithHistory: {
             chats: components["schemas"]["ChatWithHistory"][];
+        };
+        ErrorResponse: {
+            /** @default false */
+            success: boolean;
+            message: string;
         };
         FriendData: {
             online_friends: components["schemas"]["ChatUser"][];
@@ -129,6 +171,11 @@ export interface components {
             text: string;
             readonly messageNumber: number;
         };
+        SuccessResponse: {
+            /** @default true */
+            success: boolean;
+            message: string;
+        };
     };
     responses: never;
     parameters: never;
@@ -138,6 +185,47 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    api_cancel_request_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatUserMinimal"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatUserMinimal"];
+                "multipart/form-data": components["schemas"]["ChatUserMinimal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     api_get_chat_data_retrieve: {
         parameters: {
             query?: never;
@@ -245,6 +333,47 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    api_send_request_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatUserMinimal"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatUserMinimal"];
+                "multipart/form-data": components["schemas"]["ChatUserMinimal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

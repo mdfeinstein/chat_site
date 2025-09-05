@@ -12,7 +12,7 @@ import {
   Box,
   Chip
 } from "@mantine/core";
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useState, useRef } from "react";
 import React from "react";
 import {
   IconInnerShadowTopRightFilled,
@@ -24,7 +24,8 @@ import {
 } from "@tabler/icons-react";
 
 import { getFriendData } from "../api/api";
-import type { GetFriendDataResponse } from "../api/api";
+import type { GetFriendDataResponse, ChatUserMinimal } from "../api/api";
+import { cancelFriendRequest } from "../api/api";
 import { useChatPageContext } from "./ChatPage";
 import { urls } from "../urls";
 
@@ -43,40 +44,14 @@ const FriendsSection = () => {
   const [requestableUsers, setRequestableUsers] = useState<
     RequestableUserData[]
   >([]);
-  const [onlineFriends, setOnlineFriends] = useState<FriendData[]>([]);
-  const [offlineFriends, setOfflineFriends] = useState<FriendData[]>([]);
-  const [friendRequests, setFriendRequests] = useState<FriendData[]>([]);
-  const [friendInvites, setFriendInvites] = useState<FriendData[]>([]);
+  const [friendData, setFriendData] = useState<GetFriendDataResponse>(
+    {"online_friends": [], "offline_friends": [], "requested_users": [], "invited_by": []}
+  );
 
-  const getFriendsData = async () => {
-    const response = await fetch(urls.get_friend_info);
-    const friendsData = await response.json();
-    let onlineFriends: FriendData[] = [];
-    let offlineFriends: FriendData[] = [];
-    let friendRequests: FriendData[] = [];
-    let friendInvites: FriendData[] = [];
-    friendsData.forEach((friend: FriendData) => {
-      if (friend.status === "friend") {
-        if (friend.online) {
-          onlineFriends.push(friend);
-        } else {
-          offlineFriends.push(friend);
-        }
-      } else if (friend.status === "requestedByUser") {
-        friendRequests.push(friend);
-      } else if (friend.status === "requestedByOther") {
-        friendInvites.push(friend);
-      }
-    });
-    setOnlineFriends(onlineFriends);
-    setOfflineFriends(offlineFriends);
-    setFriendRequests(friendRequests);
-    setFriendInvites(friendInvites);
-  };
-
-  useEffect(() => {
-    getFriendsData();
-  }, []);
+ const updateFriendData = async () => {
+    const data = await getFriendData();
+    setFriendData(data);
+ };
 
   const { csrfToken } = useChatPageContext();
 
@@ -88,11 +63,11 @@ const FriendsSection = () => {
 
   const refreshFriendsSection = async () => {
     await getRequestableUsers();
-    await getFriendsData();
+    await updateFriendData();
   };
 
   useEffect(() => {
-    getRequestableUsers();
+    refreshFriendsSection();
   }, []);
 
   const add_chat = async (user_names: string[]) => {
@@ -121,7 +96,7 @@ const FriendsSection = () => {
         <ScrollArea h={400}>
           <Stack>
             <Chip.Group multiple value={selectedFriends} onChange={setSelectedFriends}>
-            {onlineFriends.map((friend: FriendData) => (
+            {friendData.online_friends.map((friend) => (
               <Box
                 style={{
                   display: 'flex',
@@ -132,18 +107,18 @@ const FriendsSection = () => {
                 >
               <IconInnerShadowTopRightFilled color="green"/>
               <Chip
-                key={friend.name}
-                value={friend.name}
+                key={friend.username}
+                value={friend.username}
                 radius="xs"
                 width="100%"
               >
                 <Text fw={700} fz="md" mb="0.5rem">
-                  {friend.name}
+                  {friend.username}
                 </Text>
               </Chip>
             </Box>
             ))}
-            {offlineFriends.map((friend: FriendData) => (
+            {friendData.offline_friends.map((friend) => (
               <Box
                 style={{
                   display: 'flex',
@@ -153,12 +128,12 @@ const FriendsSection = () => {
                 }}>
               <IconInnerShadowTopRightFilled color="red"/>
               <Chip
-                key={friend.name}
-                value={friend.name}
+                key={friend.username}
+                value={friend.username}
                 radius="xs"
               >
                 <Text fw={700} fz="md" mb="0.5rem">
-                  {friend.name}
+                  {friend.username}
                 </Text>
               </Chip>
             </Box>
@@ -190,32 +165,23 @@ const FriendsSection = () => {
     await refreshFriendsSection();
   };
 
-  const cancelRequest = async (friend: FriendData) => {
-    const response = await fetch(urls.cancel_request, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify({ requested_user_name: friend.name }),
-    });
-    const data = await response.json();
-    console.log(data);
+  const cancelRequest = async (friend_name: string) => {
+    const friend : ChatUserMinimal = {username: friend_name};
+    await cancelFriendRequest(friend, csrfToken);
     await refreshFriendsSection();
   };
 
-  const [selectedUser, setSelectedUser] = useState<RequestableUserData>({
-    name: "",
-    pk: -1,
-  });
+  const [selectedUser, setSelectedUser] = useState<RequestableUserData | null>(null);
 
   const [sendRequestMenuOpened, setSendRequestMenuOpened] =
     useState<boolean>(false);
+
+  
   const requestsElement = (
     <Accordion.Item key="requests" value="requests">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Requests ({friendRequests.length})
+          Requests ({friendData.requested_users.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
@@ -232,21 +198,25 @@ const FriendsSection = () => {
           data={requestableUsers.map(
             (user: RequestableUserData) => user.name
           )}
-          value={selectedUser.name}
+          value={selectedUser?.name}
+          defaultValue = {null}
           searchable
           onChange={(value) =>
             setSelectedUser(
               requestableUsers.find(
                 (user: RequestableUserData) => user.name === value!
-              )!
+              ) || null
             )
           }
         />
         <Tooltip label="Send Request" position="bottom" withArrow>
         <ActionIcon
           onClick={() => {
-            requestUser(selectedUser);
+            if (selectedUser !== null) {
+              requestUser(selectedUser);
+            }
             setSendRequestMenuOpened(false);
+            setSelectedUser(null);
           }}
         >
           <IconSend2/>
@@ -255,9 +225,9 @@ const FriendsSection = () => {
         </Box>
         <ScrollArea h={400}>
           <Stack>
-            {friendRequests.map((friend: FriendData) => (
+            {friendData.requested_users.map((friend) => (
               <Paper
-                key={friend.name}
+                key={friend.username}
                 shadow="xl"
                 p="md"
                 withBorder
@@ -269,14 +239,14 @@ const FriendsSection = () => {
                 }}
               >
                 <Text fw={700} fz="md" c="red.8" mb="0.5rem">
-                  {friend.name}
+                  {friend.username}
                 </Text>
                 <Tooltip label="Cancel Request" position="bottom" withArrow>
                 <ActionIcon
                   color="red"
                   size="lg"
                   ml="md"
-                  onClick={() => cancelRequest(friend)}
+                  onClick={() => cancelRequest(friend.username)}
                 >
                   <IconXboxXFilled />
                 </ActionIcon>
@@ -321,15 +291,15 @@ const FriendsSection = () => {
     <Accordion.Item key="invites" value="invites">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Invites ({friendInvites.length})
+          Invites ({friendData.invited_by.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
         <ScrollArea h={200}>
           <Stack>
-            {friendInvites.map((friend: FriendData) => (
+            {friendData.invited_by.map((friend) => (
               <Paper
-                key={friend.name}
+                key={friend.username}
                 shadow="xl"
                 p="md"
                 withBorder
@@ -341,18 +311,18 @@ const FriendsSection = () => {
                 }}
               >
                 <Text fw={700} fz="md" mb="0.5rem">
-                  {friend.name}
+                  {friend.username}
                 </Text>
                 <Tooltip label="Accept Invite" position="bottom" withArrow>
                 <ActionIcon color="green" size="lg" ml="xs"
-                onClick={() => acceptInvite(friend)}
+                // onClick={() => acceptInvite(friend)}
                 >
                   <IconUserCheck />
                 </ActionIcon>
                 </Tooltip>
                 <Tooltip label="Reject Invite" position="bottom" withArrow>
                 <ActionIcon color="red" size="lg" ml="xs"
-                onClick={() => rejectInvite(friend)}
+                // onClick={() => rejectInvite(friend)}
                 >
                   <IconUserX />
                 </ActionIcon>

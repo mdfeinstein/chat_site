@@ -3,6 +3,47 @@ info:
   title: ''
   version: 0.0.0
 paths:
+  /api/cancel_request/:
+    post:
+      operationId: api_cancel_request_create
+      description: Cancel a friend request
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/get_chat_data/:
     get:
       operationId: api_get_chat_data_retrieve
@@ -223,6 +264,47 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/send_request/:
+    post:
+      operationId: api_send_request_create
+      description: Send a friend request
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ChatUserMinimal'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
 components:
   schemas:
     ChatData:
@@ -246,15 +328,22 @@ components:
         id:
           type: integer
           readOnly: true
-        user:
-          type: integer
+        username:
+          type: string
         loggedIn:
           type: boolean
         accountActive:
           type: boolean
       required:
       - id
-      - user
+      - username
+    ChatUserMinimal:
+      type: object
+      properties:
+        username:
+          type: string
+      required:
+      - username
     ChatWithHistory:
       type: object
       properties:
@@ -279,6 +368,16 @@ components:
             $ref: '#/components/schemas/ChatWithHistory'
       required:
       - chats
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: false
+        message:
+          type: string
+      required:
+      - message
     FriendData:
       type: object
       properties:
@@ -327,6 +426,16 @@ components:
       - messageNumber
       - sender
       - text
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          default: true
+        message:
+          type: string
+      required:
+      - message
   securitySchemes:
     basicAuth:
       type: http

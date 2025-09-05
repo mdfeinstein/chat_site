@@ -2,10 +2,32 @@ from rest_framework import serializers
 from .models import ChatUser, Message, Chat, FriendsList
 
 
+class SuccessResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField(default=True)
+    message = serializers.CharField()
+
+
+class ErrorResponseSerializer(serializers.Serializer):
+    success = serializers.BooleanField(default=False)
+    message = serializers.CharField()
+
+
 class ChatUserSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username")
+
     class Meta:
         model = ChatUser
-        fields = ["id", "user", "loggedIn", "accountActive"]
+        fields = [
+            "id",
+            "username",
+            "loggedIn",
+            "accountActive",
+        ]
+
+
+class ChatUserMinimalSerializer(serializers.Serializer):
+    # assume username is unique right now
+    username = serializers.CharField()
 
 
 class FriendsListSerializer(serializers.ModelSerializer):

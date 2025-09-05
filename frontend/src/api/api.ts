@@ -1,10 +1,18 @@
 import type {paths} from "./../../../src/api/types";
+import type { components } from "./../../../src/api/types";
+
+export type SuccessResponse = components['schemas']['SuccessResponse'];
+export type ErrorResponse = components['schemas']['ErrorResponse'];
+export type ChatUserMinimal = components['schemas']['ChatUserMinimal'];
 
 const API_PATHS = {
   getChatData: '/api/get_chat_data/',
   getChats: '/api/get_chats/',
   getFriendData: '/api/get_friend_data/',
+  sendFriendRequest: '/api/send_request/',
+  cancelFriendRequest: '/api/cancel_request/',
 }
+
 
 export type GetChatDataResponse = paths['/api/get_chat_data/']['get']['responses']['200']['content']['application/json'];
 export const getChatData = async (chatId: number) => {
@@ -27,4 +35,31 @@ export const getFriendData = async () => {
   const response = await fetch('/api/get_friend_data/');
   const data : GetFriendDataResponse = await response.json();
   return data;
+};
+
+export const sendFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+  const response = await fetch('/api/send_request/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
+
+export type CancelFriendRequestRequest = paths['/api/cancel_request/']['post']['requestBody']['content']['application/json'];
+export const cancelFriendRequest = async (data: CancelFriendRequestRequest, csrfToken: string) => {
+  const response = await fetch('/api/cancel_request/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
 };

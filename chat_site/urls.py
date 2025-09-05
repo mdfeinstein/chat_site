@@ -56,6 +56,16 @@ urlpatterns = [
         chat.drf_views.friends_list,
         name="get_friend_data_api",
     ),
+    path(
+        "api/send_request/",
+        chat.drf_views.send_request,
+        name="send_request_api",
+    ),
+    path(
+        "api/cancel_request/",
+        chat.drf_views.cancel_request,
+        name="cancel_request_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(
