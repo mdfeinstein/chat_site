@@ -22,9 +22,11 @@ import {
   IconSend2,
   IconMessageCirclePlus
 } from "@tabler/icons-react";
-import { urls } from "../urls";
+
+import { getFriendData } from "../api/api";
+import type { GetFriendDataResponse } from "../api/api";
 import { useChatPageContext } from "./ChatPage";
-import { send } from "process";
+import { urls } from "../urls";
 
 export interface FriendData {
   status: "friend" | "requestedByUser" | "requestedByOther";

@@ -55,6 +55,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/get_friend_data/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get friends and invites/requests sorted by category */
+        get: operations["api_get_friend_data_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/schema/": {
         parameters: {
             query?: never;
@@ -84,6 +101,12 @@ export interface components {
             chat_name: string;
             messages: components["schemas"]["Message"][];
         };
+        ChatUser: {
+            readonly id: number;
+            user: number;
+            loggedIn?: boolean;
+            accountActive?: boolean;
+        };
         ChatWithHistory: {
             chat_id: number;
             chat_name: string;
@@ -91,6 +114,12 @@ export interface components {
         };
         ChatsWithHistory: {
             chats: components["schemas"]["ChatWithHistory"][];
+        };
+        FriendData: {
+            online_friends: components["schemas"]["ChatUser"][];
+            offline_friends: components["schemas"]["ChatUser"][];
+            requested_users: components["schemas"]["ChatUser"][];
+            invited_by: components["schemas"]["ChatUser"][];
         };
         Message: {
             readonly id: number;
@@ -164,6 +193,25 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatsWithHistory"];
+                };
+            };
+        };
+    };
+    api_get_friend_data_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FriendData"];
                 };
             };
         };

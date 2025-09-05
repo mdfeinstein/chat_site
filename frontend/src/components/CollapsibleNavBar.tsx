@@ -68,34 +68,29 @@ const ArrowedMarginTab: React.FC<{
 const CollapsibleNavBar = ({
   isCollapsed,
   collapser,
-  // getChatsUrl,
-  getFriendInfoUrl,
   setChatDetailsFunc,
   selectedChatId,
 }: {
   isCollapsed: boolean;
   collapser: () => void;
-  // getChatsUrl: string;
-  getFriendInfoUrl: string;
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }) => {
-  const getChatsData = async () => {
-    const response = await fetch('/api/get_chats_with_history/');
-    const data : GetChatsWithHistoryResponse = await response.json();
-    const chats : GetChatWithHistoryResponse[] = data.chats;
+  const updateChatsData = async () => {
+    const data = await getChatsWithHistory();
+    const chats : GetChatWithHistoryResponse[] = data;
     setChatData(chats);
   };
 
-  const getFriendsData = async () => {
-    const response = await fetch(getFriendInfoUrl);
-    const data = await response.json();
-    setFriendData(data);
-  };
+  // const getFriendsData = async () => {
+  //   const response = await fetch(getFriendInfoUrl);
+  //   const data = await response.json();
+  //   setFriendData(data);
+  // };
 
   const [section, setSection] = useState<"Chats" | "Friends">("Chats");
   const [chatData, setChatData] = useState<GetChatWithHistoryResponse[]>([]);
-  const [friendData, setFriendData] = useState<FriendData[]>([]);
+  // const [friendData, setFriendData] = useState<FriendData[]>([]);
 
   const chatsElement = (
     <ChatsSection
@@ -106,31 +101,20 @@ const CollapsibleNavBar = ({
   );
   const friendsElement = <FriendsSection />;
   useEffect(() => {
-    getChatsData();
-  }, []);
-  useEffect(() => {
-    getFriendsData();
+    updateChatsData();
   }, []);
 
-  // Generate links based on the selected section
-  const data = section === "Chats" ? chatData : friendData;
-  // const chatsElement = <ChatsSection chatData={chatData!} />;
-  // const friendsElement = <FriendsSection friendData={friendData!} />;
 
 
   return (
     <Box style={{ display: "flex", flexDirection: "row" }}>
       <Box
-        // component="nav"
-        // onMouseEnter={collapser}
-        // onMouseLeave={collapser}
-        // onHoverEnd={collapser}
         style={{
           display: "flex",
           flexDirection: "column",
           height: "100%",
           width: "calc(100% - 40px)",
-          // padding: '16px',
+
           borderRight: "1px solid #e9ecef",
         }}
       >

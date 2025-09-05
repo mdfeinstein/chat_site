@@ -16,7 +16,7 @@ interface ChatPageProps {
   logoutUrl: string;
   getNewMessagesUrl: string;
   sendMessageUrl: string;
-  getChatsUrl: string;
+  // getChatsUrl: string;
   getFriendInfoUrl: string;
   csrfToken: string;
 }
@@ -52,11 +52,10 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
 
-  const getChatData = async () => {
+  const updateChatData = async () => {
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
-      const response = await fetch('/api/get_chat_data'+"/"+chatId);
-      const data : GetChatDataResponse = await response.json();
+      const data = await getChatData(chatId);
       setChatName("Chat with: " + data.chat_name);
       setInitialMessages(data.messages);
       setInitialMessagesLoaded(true);
@@ -72,7 +71,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
   };
 
   useEffect(() => {
-    getChatData();
+    updateChatData();
   }, [chatId]);
 
 
@@ -108,8 +107,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
         <CollapsibleNavBar
           isCollapsed={isNavBarCollapsed}
           collapser={toggleNavBar}
-          // getChatsUrl={getChatsUrl}
-          getFriendInfoUrl={getFriendInfoUrl}
           setChatDetailsFunc={setChatDetailsFunc}
           selectedChatId={chatId}
         />

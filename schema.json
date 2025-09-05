@@ -60,6 +60,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ChatsWithHistory'
           description: ''
+  /api/get_friend_data/:
+    get:
+      operationId: api_get_friend_data_retrieve
+      description: Get friends and invites/requests sorted by category
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FriendData'
+          description: ''
   /api/schema/:
     get:
       operationId: api_schema_retrieve
@@ -223,6 +240,21 @@ components:
       - chat_id
       - chat_name
       - messages
+    ChatUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        user:
+          type: integer
+        loggedIn:
+          type: boolean
+        accountActive:
+          type: boolean
+      required:
+      - id
+      - user
     ChatWithHistory:
       type: object
       properties:
@@ -247,6 +279,30 @@ components:
             $ref: '#/components/schemas/ChatWithHistory'
       required:
       - chats
+    FriendData:
+      type: object
+      properties:
+        online_friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        offline_friends:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        requested_users:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+        invited_by:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChatUser'
+      required:
+      - invited_by
+      - offline_friends
+      - online_friends
+      - requested_users
     Message:
       type: object
       properties:

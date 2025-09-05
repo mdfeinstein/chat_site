@@ -93,9 +93,7 @@ const mountChatPage = () => {
           logoutUrl={logoutUrl}
           getNewMessagesUrl={getNewMessagesUrl}
           sendMessageUrl={sendMessageUrl}
-          getChatsUrl={getChatsUrl}
           getFriendInfoUrl={getFriendInfoUrl}
-          // getChatDataUrl={getChatDataUrl}
           csrfToken={csrfToken}
         />
       </StrictMode>

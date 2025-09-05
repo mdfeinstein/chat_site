@@ -51,6 +51,11 @@ urlpatterns = [
         chat.drf_views.get_chats_with_history,
         name="get_chats_with_history_api",
     ),
+    path(
+        "api/get_friend_data/",
+        chat.drf_views.friends_list,
+        name="get_friend_data_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(

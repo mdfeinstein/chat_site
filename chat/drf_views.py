@@ -10,6 +10,7 @@ from .serializers import (
     ChatDataSerializer,
     ChatWithHistorySerializer,
     ChatsWithHistorySerializer,
+    FriendDataSerializer,
 )
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
@@ -70,3 +71,26 @@ def get_chats_with_history(request):
     return Response(
         ChatsWithHistorySerializer({"chats": chats_data}).data
     )
+
+
+@extend_schema(
+    description="Get friends and invites/requests sorted by category",
+    responses={200: FriendDataSerializer},
+)
+@api_view(["GET"])
+def friends_list(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    friends_list = chat_user.friends_list
+    online_friends = friends_list.friends.filter(loggedIn=True)
+    offline_friends = friends_list.friends.filter(loggedIn=False)
+    requested_users = friends_list.requested_users.all()
+    invited_by = friends_list.invited_by.all()
+    serializer = FriendDataSerializer(
+        {
+            "online_friends": online_friends,
+            "offline_friends": offline_friends,
+            "requested_users": requested_users,
+            "invited_by": invited_by,
+        }
+    )
+    return Response(serializer.data)

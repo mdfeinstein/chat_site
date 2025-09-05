@@ -1,10 +1,7 @@
 import { Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { paths } from "../../../src/api/types";
-
-type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json']['chats'][0];
-
+import type { GetChatWithHistoryResponse } from "../api/api";
 
 export interface ChatData {
   id: number;

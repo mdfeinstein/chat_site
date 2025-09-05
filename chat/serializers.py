@@ -77,3 +77,10 @@ class ChatWithHistorySerializer(serializers.Serializer):
 
 class ChatsWithHistorySerializer(serializers.Serializer):
     chats = ChatWithHistorySerializer(many=True)
+
+
+class FriendDataSerializer(serializers.Serializer):
+    online_friends = ChatUserSerializer(many=True)
+    offline_friends = ChatUserSerializer(many=True)
+    requested_users = ChatUserSerializer(many=True)
+    invited_by = ChatUserSerializer(many=True)
