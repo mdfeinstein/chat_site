@@ -1,34 +1,14 @@
-import { useEffect, useState } from "react";
-import {
-  IconSwitchHorizontal,
-  IconLogout,
-  IconMessages,
-  IconUsers,
-  IconSettings,
-  IconFileAnalytics,
-  IconDatabaseImport,
-  IconBellRinging,
-  IconFingerprint,
-  IconKey,
-} from "@tabler/icons-react";
+import { useState } from "react";
 import {
   SegmentedControl,
-  Text,
   Box,
-  Group,
   NavLink,
   Stack,
-  Burger,
 } from "@mantine/core";
-import { get } from "http";
 import FriendsSection from "./FriendsSection";
 import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
-import type { ChatData } from "./ChatsSection";
-import { getChatData, getChatsWithHistory } from "../api/api";
-import type { GetChatWithHistoryResponse, 
-  GetChatsWithHistoryResponse } from "../api/api";
 
 const ArrowedMarginTab: React.FC<{
   isCollapsed: boolean;

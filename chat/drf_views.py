@@ -308,3 +308,27 @@ def create_chat(request):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@extend_schema(
+    description="Get users that can be requested by the current user",
+    responses={200: ChatUsersMinimalSerializer},
+)
+@api_view(["GET"])
+def requestable_users(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    usernames = (
+        ChatUser.objects.exclude(pk=chat_user.pk)
+        .exclude(pk__in=chat_user.friends_list.friends.all())
+        .exclude(pk__in=chat_user.friends_list.requested_users.all())
+    ).values_list("user__username", flat=True)
+    serializer = ChatUsersMinimalSerializer(
+        data={"usernames": usernames}
+    )
+    if serializer.is_valid():
+        return Response(serializer.data)
+    else:
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )

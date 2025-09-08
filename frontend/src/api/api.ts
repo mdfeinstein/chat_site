@@ -15,6 +15,7 @@ const API_PATHS = {
   acceptFriendRequest: '/api/accept_friend_request/',
   rejectFriendRequest: '/api/reject_friend_request/',
   createChat: '/api/create_chat/',
+  requestableUsers: '/api/requestable_users/',
 };
 
 
@@ -104,4 +105,10 @@ export const createChat = async (data: ChatUsersMinimal, csrfToken: string) => {
   });
   const responseMessage : SuccessResponse | ErrorResponse = await response.json();
   return responseMessage;
+};
+
+export const getRequestableUsers = async () => {
+  const response = await fetch('/api/requestable_users/');
+  const data : ChatUsersMinimal = await response.json();
+  return data;
 };

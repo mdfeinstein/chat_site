@@ -83,7 +83,6 @@ const ChatsSection = ({
               backgroundColor: chat.chat_id === selectedChatId ? "#f4adadff" :  hoveredChatId === chat.chat_id ? "#fff2f2" : "#ffffff",
             }}
           >
-              
             <Text fw={700} fz="lg" c="red.8" mb="0.5rem">
               {chat.chat_name}
             </Text>

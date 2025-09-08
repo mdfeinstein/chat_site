@@ -33,20 +33,15 @@ import {
   acceptFriendRequest,
   rejectFriendRequest,
   createChat,
+  getRequestableUsers,
 } from "../api/api";
 import { useChatPageContext } from "./ChatPage";
-import { urls } from "../urls";
 
-
-export interface RequestableUserData {
-  name: string;
-  pk: number;
-}
 
 const FriendsSection = () => {
   const [requestableUsers, setRequestableUsers] = useState<
-    RequestableUserData[]
-  >([]);
+    ChatUsersMinimal
+  >({usernames: []});
   const [friendData, setFriendData] = useState<GetFriendDataResponse>({
     online_friends: [],
     offline_friends: [],
@@ -61,14 +56,13 @@ const FriendsSection = () => {
 
   const { csrfToken } = useChatPageContext();
 
-  const getRequestableUsers = async () => {
-    const response = await fetch(urls.get_requestable_users);
-    const data = await response.json();
-    setRequestableUsers(data.users);
+  const updateRequestableUsers = async () => {
+    const data = await getRequestableUsers();
+    setRequestableUsers(data);
   };
 
   const refreshFriendsSection = async () => {
-    await getRequestableUsers();
+    await updateRequestableUsers();
     await updateFriendData();
   };
 
@@ -190,7 +184,7 @@ const FriendsSection = () => {
   };
 
 
-  const [selectedUser, setSelectedUser] = useState<RequestableUserData | null>(
+  const [selectedUser, setSelectedUser] = useState<string | null>(
     null
   );
 
@@ -215,16 +209,14 @@ const FriendsSection = () => {
         >
           <Select
             placeholder="Select User"
-            data={requestableUsers.map(
-              (user: RequestableUserData) => user.name
-            )}
-            value={selectedUser?.name ?? null}
+            data={requestableUsers.usernames}
+            value={selectedUser ?? null}
             defaultValue={null}
             searchable
             onChange={(value) =>
               setSelectedUser(
-                requestableUsers.find(
-                  (user: RequestableUserData) => user.name === value!
+                requestableUsers.usernames.find(
+                  (username) => username === value!
                 ) || null
               )
             }
@@ -233,7 +225,7 @@ const FriendsSection = () => {
             <ActionIcon
               onClick={() => {
                 if (selectedUser !== null) {
-                  sendRequest(selectedUser.name);
+                  sendRequest(selectedUser);
                 }
                 setSendRequestMenuOpened(false);
                 setSelectedUser(null);

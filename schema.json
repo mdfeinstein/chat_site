@@ -241,6 +241,23 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/requestable_users/:
+    get:
+      operationId: api_requestable_users_retrieve
+      description: Get users that can be requested by the current user
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatUsersMinimal'
+          description: ''
   /api/schema/:
     get:
       operationId: api_schema_retrieve
