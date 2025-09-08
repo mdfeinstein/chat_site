@@ -11,6 +11,8 @@ from .serializers import (
     ChatUsersMinimalSerializer,
     FriendsListSerializer,
     MessageSerializer,
+    MessagesSerializer,
+    MessageRequestSerializer,
     ChatSerializer,
     ChatDataSerializer,
     ChatWithHistorySerializer,
@@ -332,3 +334,91 @@ def requestable_users(request):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+
+@extend_schema(
+    description="Get messages between start_msg_number (inclusive) and end_msg_number (non-inclusive) for the chat with id chat_id",
+    parameters=[
+        OpenApiParameter(
+            name="chat_id",
+            type=int,
+            location=OpenApiParameter.PATH,
+            description="The id of the chat to get messages for",
+        ),
+        OpenApiParameter(
+            name="start_msg_number",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="The start message number to get messages for",
+        ),
+        OpenApiParameter(
+            name="end_msg_number",
+            type=int,
+            location=OpenApiParameter.QUERY,
+            description="The end message number to get messages for",
+        ),
+    ],
+    responses={
+        200: MessageSerializer(many=True),
+        400: ErrorResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["GET"])
+def get_messages(request, chat_id):
+    """
+    returns the messages between start_msg_number (inclusive)
+    and end_msg_number (non-inclusive) for the chat with id chat_id
+    """
+    # validate request
+    start_msg_number = request.query_params.get("start_msg_number", 0)
+    end_msg_number = request.query_params.get("end_msg_number", -1)
+    serializer = MessageRequestSerializer(
+        data={
+            "chat_id": chat_id,
+            "start_msg_number": start_msg_number,
+            "end_msg_number": end_msg_number,
+        }
+    )
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # else:
+    chat_user = ChatUser.objects.get(user=request.user)
+    chat = Chat.objects.filter(users=chat_user).get(pk=chat_id)
+    if chat is None:
+        return Response(
+            {"success": False, "message": "Chat not found"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+    # get messages
+    start_msg_number = int(
+        request.query_params.get("start_msg_number", 0)
+    )
+    end_msg_number = int(
+        request.query_params.get("end_msg_number", -1)
+    )
+    messages = Message.objects.filter(chat=chat)
+    # filter by start and end message number
+    end_msg_number = (
+        end_msg_number if end_msg_number != -1 else messages.count()
+    )
+    messages = messages.filter(
+        message_number__gte=start_msg_number,
+        message_number__lt=end_msg_number,
+    ).order_by("message_number")
+    response_serializer = MessageSerializer(messages, many=True)
+    return Response(response_serializer.data)
+
+
+@extend_schema(
+    description="Get user info",
+    responses={200: ChatUserSerializer},
+)
+@api_view(["GET"])
+def get_user_info(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    return Response(ChatUserSerializer(chat_user).data)

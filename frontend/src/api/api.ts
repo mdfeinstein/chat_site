@@ -5,6 +5,8 @@ export type SuccessResponse = components['schemas']['SuccessResponse'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type ChatUserMinimal = components['schemas']['ChatUserMinimal'];
 export type ChatUsersMinimal = components['schemas']['ChatUsersMinimal'];
+export type MessageResponse = components['schemas']['Message'];
+export type ChatUserResponse = components['schemas']['ChatUser'];
 
 const API_PATHS = {
   getChatData: '/api/get_chat_data/',
@@ -16,6 +18,8 @@ const API_PATHS = {
   rejectFriendRequest: '/api/reject_friend_request/',
   createChat: '/api/create_chat/',
   requestableUsers: '/api/requestable_users/',
+  getMessages: '/api/get_messages/',
+  getUserInfo: '/api/get_user_info/',
 };
 
 
@@ -110,5 +114,17 @@ export const createChat = async (data: ChatUsersMinimal, csrfToken: string) => {
 export const getRequestableUsers = async () => {
   const response = await fetch('/api/requestable_users/');
   const data : ChatUsersMinimal = await response.json();
+  return data;
+};
+
+export const getMessages = async (chatId: number, startMsgNumber: number, endMsgNumber: number) => {
+  const response = await fetch(`/api/get_messages/${chatId}/?start_msg_number=${startMsgNumber}&end_msg_number=${endMsgNumber}`);
+  const data : MessageResponse[] = await response.json();
+  return data;
+};
+
+export const getUserInfo = async () => {
+  const response = await fetch('/api/get_user_info/');
+  const data : ChatUserResponse = await response.json();
   return data;
 };

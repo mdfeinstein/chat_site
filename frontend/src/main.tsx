@@ -73,11 +73,7 @@ const mountChatPage = () => {
     const homeUrl = chatPage.getAttribute('data-home-url') || '';
     const exitChatUrl = chatPage.getAttribute('data-exit-chat-url') || '';
     const logoutUrl = chatPage.getAttribute('data-logout-url') || '';
-    const getNewMessagesUrl = chatPage.getAttribute('data-get-new-messages-url') || '';
     const sendMessageUrl = chatPage.getAttribute('data-send-message-url') || '';
-    const getChatsUrl = chatPage.getAttribute('data-get-chats-url') || '';
-    const getFriendInfoUrl = chatPage.getAttribute('data-get-friend-info-url') || '';
-    const getChatDataUrl = chatPage.getAttribute('data-get-chat-data-url') || '';
     const csrfToken = chatPage.getAttribute('data-csrf-token') || '';
     const initialMessages = parseInitialMessages();
     console.log('Initial messages:', initialMessages);
@@ -91,9 +87,7 @@ const mountChatPage = () => {
           homeUrl={homeUrl}
           exitChatUrl={exitChatUrl}
           logoutUrl={logoutUrl}
-          getNewMessagesUrl={getNewMessagesUrl}
           sendMessageUrl={sendMessageUrl}
-          getFriendInfoUrl={getFriendInfoUrl}
           csrfToken={csrfToken}
         />
       </StrictMode>

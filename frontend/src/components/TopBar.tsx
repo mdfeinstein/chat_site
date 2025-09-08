@@ -1,6 +1,8 @@
 // TopBar.tsx
 import React from 'react';
-import { Group, Button, Title, Box } from '@mantine/core';
+import { Group, Button, Title, Box, Text } from '@mantine/core';
+import { useChatPageContext } from './ChatPage';
+import { userInfo } from 'os';
 
 interface TopBarProps {
   chatName: string;
@@ -19,6 +21,7 @@ const TopBar: React.FC<TopBarProps> = ({
   logoutUrl, 
   csrfToken 
 }) => {
+  const username = useChatPageContext().chatUser.username;
   return (
     <Box
       style={{
@@ -77,6 +80,13 @@ const TopBar: React.FC<TopBarProps> = ({
             Logout
           </Button>
         </form>
+        <Text 
+        size="xl"
+        ta="center"
+        style={{
+          whiteSpace: 'pre-wrap',
+        }}
+        > Welcome{'\n'}{username} </Text>
       </Group>
     </Box>
   );

@@ -123,6 +123,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/get_messages/{chat_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get messages between start_msg_number (inclusive) and end_msg_number (non-inclusive) for the chat with id chat_id */
+        get: operations["api_get_messages_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/get_user_info/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** @description Get user info */
+        get: operations["api_get_user_info_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/reject_friend_request/": {
         parameters: {
             query?: never;
@@ -453,6 +487,68 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FriendData"];
+                };
+            };
+        };
+    };
+    api_get_messages_list: {
+        parameters: {
+            query?: {
+                /** @description The end message number to get messages for */
+                end_msg_number?: number;
+                /** @description The start message number to get messages for */
+                start_msg_number?: number;
+            };
+            header?: never;
+            path: {
+                /** @description The id of the chat to get messages for */
+                chat_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Message"][];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    api_get_user_info_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatUser"];
                 };
             };
         };

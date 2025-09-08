@@ -1,4 +1,4 @@
-import React from "react";
+import React, { use } from "react";
 import { useState, useEffect, createContext, useContext } from "react";
 import { Box, Burger } from "@mantine/core";
 import MessagesContainer from "./MessagesContainer";
@@ -6,21 +6,21 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-import { getChatData } from "../api/api";
-import type { GetChatDataResponse } from "../api/api";
+import { getChatData, getUserInfo } from "../api/api";
+import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
 
 interface ChatPageProps {
   chatId_initial: number | string;
   homeUrl: string;
   exitChatUrl: string;
   logoutUrl: string;
-  getNewMessagesUrl: string;
   sendMessageUrl: string;
   csrfToken: string;
 }
 
 interface ChatPageContext {
   csrfToken: string;
+  chatUser: ChatUserResponse;
 }
 
 const ChatPageContext = createContext<ChatPageContext>({} as ChatPageContext);
@@ -32,13 +32,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
   homeUrl,
   exitChatUrl,
   logoutUrl,
-  getNewMessagesUrl,
   sendMessageUrl,
   csrfToken,
 }) => {
   if (typeof chatId_initial === "string") {
     chatId_initial = parseInt(chatId_initial);
   }
+  const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
   const [chatId, setChatId] = useState<number>(chatId_initial);
   const [chatName, setChatName] = useState<string>("");
   const [isNavBarCollapsed, setIsNavBarCollapsed] = useState<boolean>(true);
@@ -48,12 +48,17 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
 
+  const updateUserInfo = async () => {
+    const data = await getUserInfo();
+    setUserInfo(data);
+  };
+
   const updateChatData = async () => {
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
       const data = await getChatData(chatId);
       setChatName("Chat with: " + data.chat_name);
-      setInitialMessages(data.messages);
+      setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
       setInitialMessagesLoaded(true);
     }
     else {
@@ -70,10 +75,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     updateChatData();
   }, [chatId]);
 
+  useEffect(() => {
+    updateUserInfo();
+  }, []);
 
 
   return (
-    <ChatPageContextProvider value={{ csrfToken: csrfToken }}>
+    <ChatPageContextProvider value={{ csrfToken: csrfToken, chatUser: userInfo }}>
 
     <Box
       style={{
@@ -150,7 +158,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
             initialMessages={initialMessages}
             initialMessagesLoaded={initialMessagesLoaded}
             chatId={chatId}
-            getNewMessagesUrl={getNewMessagesUrl}
           />
         </Box>
 

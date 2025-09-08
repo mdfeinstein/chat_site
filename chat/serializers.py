@@ -57,6 +57,16 @@ class MessageSerializer(serializers.ModelSerializer):
         ]
 
 
+class MessagesSerializer(serializers.Serializer):
+    messages = MessageSerializer(many=True)
+
+
+class MessageRequestSerializer(serializers.Serializer):
+    chat_id = serializers.IntegerField()
+    start_msg_number = serializers.IntegerField()
+    end_msg_number = serializers.IntegerField()
+
+
 class ChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat

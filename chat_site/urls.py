@@ -86,6 +86,16 @@ urlpatterns = [
         chat.drf_views.requestable_users,
         name="requestable_users_api",
     ),
+    path(
+        "api/get_messages/<int:chat_id>/",
+        chat.drf_views.get_messages,
+        name="get_messages_api",
+    ),
+    path(
+        "api/get_user_info/",
+        chat.drf_views.get_user_info,
+        name="get_user_info_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(

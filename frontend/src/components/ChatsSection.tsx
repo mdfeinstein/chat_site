@@ -4,14 +4,6 @@ import React from "react";
 import type { GetChatWithHistoryResponse, GetChatsWithHistoryResponse } from "../api/api";
 import { getChatsWithHistory } from "../api/api";
 
-export interface ChatData {
-  id: number;
-  name: string;
-  link: string;
-  lastMessages: string[];
-  lastMessagesAuthors: string[];
-  lastMessagesDates: string[];
-}
 
 const formatDate = (createdAt: string) => {
   // Format the date if needed

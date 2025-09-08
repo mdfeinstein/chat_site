@@ -1,35 +1,35 @@
-import React, { useState, useEffect, useRef, use } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Stack, Box, ScrollArea } from '@mantine/core';
 import MessageContainer from './MessageContainer';
 import { ScrollToBottomButton } from './ScrollToBottomButton';
+import { getMessages } from '../api/api';
+import type { MessageResponse } from '../api/api';
+import { useChatPageContext } from "./ChatPage";
 
 export interface Message {
-  id: number;
-  sender: string;
-  createdAt: string;
-  text: string;
-  messageNumber: number;
+  message: MessageResponse;
   isNew?: boolean;
 }
 
 interface MessagesContainerProps {
   initialMessages: Message[];
   initialMessagesLoaded: boolean;
-  chatId: number | string;
-  getNewMessagesUrl: string;
+  chatId: number;
 }
 
 const MessagesContainer: React.FC<MessagesContainerProps> = ({
   initialMessages,
   initialMessagesLoaded,
-  chatId,
-  getNewMessagesUrl
+  chatId
 }) => {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
   // console.log("last initial message: ", initialMessages[initialMessages.length - 1]);
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
-    initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0
+    initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].message.messageNumber : 0
   );
+
+  // Get the user info from the context
+  const { chatUser } = useChatPageContext();
 
   const lastMessageNumberRef=useRef<number>(lastMessageNumber);
   useEffect(()=>{
@@ -37,11 +37,9 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   },[lastMessageNumber]);
   
   useEffect(() => {
-    // setInitialMessagesLoaded(false);
     setMessages(initialMessages);
-    setLastMessageNumber(initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].messageNumber : 0);
+    setLastMessageNumber(initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].message.messageNumber : 0);
     scrollToBottom();
-    // setInitialMessagesLoaded(true);
   }, [chatId, initialMessages]);
 
   
@@ -79,30 +77,35 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const fetchNewMessagesOnce = async () => {
     if (chatId===-1) return;
     // console.log("fetch with last message number: ", lastMessageNumberRef.current);
-    const response = await fetch(
-      `${getNewMessagesUrl}?chat_pk=${chatId}&last_message_number=${lastMessageNumberRef.current}`
-    );
-    const data = await response.json();
+
+    const data = await getMessages(chatId, lastMessageNumberRef.current + 1, -1);
+    if (!data ||  data.length === 0) return;
     // console.log("checking last message number before setting: ", data.last_message_number);
-    if (data.last_message_number > lastMessageNumberRef.current) {
-      setLastMessageNumber(data.last_message_number);
+    else if (data[data.length - 1].messageNumber > lastMessageNumberRef.current) {
+      setLastMessageNumber(data[data.length - 1].messageNumber);
     }
     else { return; }
     // Only process messages if the last message number has increased      
     // Create new messages by mapping through the arrays
-    const newMessages = data.messages.map((message: any) => ({
-      id: message.id,
-      sender: message.sender,
-      createdAt: message.created_at,
-      text: message.text,
-      messageNumber: message.message_number,
+    let thisUserInMessages = false;
+    const newMessages = data.map((message) => {
+      console.log("message author: ", message.sender);
+      console.log("chat user username: ", chatUser.username);
+      if (message.sender === chatUser.username) {
+        console.log("this user in messages");
+        thisUserInMessages = true;
+      }
+      return {
+      message: message,
       isNew: true,
-    }));
+    };
+  }
+  );
 
     // Add new messages to the state
     setMessages(prevMessages => [...prevMessages, ...newMessages]);
     //scroll to bottom if new message is from this user
-    if (data.new_message_this_user || isScrolledToBottom() ) {
+    if (thisUserInMessages || isScrolledToBottom() ) {
       scrollToBottom();
     }
   };
@@ -130,6 +133,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         }
       }
     };
+
     if (initialMessagesLoaded) {
       fetchNewMessagesLoop();
     }
@@ -157,11 +161,11 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       >
         {messages.map((message) => (
           <MessageContainer
-            key={message.id}
-            sender={message.sender}
-            createdAt={message.createdAt}
-            text={message.text}
-            messageNumber={message.messageNumber}
+            key={message.message.messageNumber}
+            sender={message.message.sender}
+            createdAt={message.message.createdAt}
+            text={message.message.text}
+            messageNumber={message.message.messageNumber}
             isNew={message.isNew}
           />
         ))}
