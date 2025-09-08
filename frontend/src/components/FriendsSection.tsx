@@ -24,21 +24,19 @@ import {
 } from "@tabler/icons-react";
 
 import { getFriendData } from "../api/api";
-import type { GetFriendDataResponse, ChatUserMinimal } from "../api/api";
+import type { GetFriendDataResponse, ChatUserMinimal, ChatUsersMinimal, 
+  SuccessResponse, ErrorResponse
+ } from "../api/api";
 import {
   sendFriendRequest,
   cancelFriendRequest,
   acceptFriendRequest,
   rejectFriendRequest,
+  createChat,
 } from "../api/api";
 import { useChatPageContext } from "./ChatPage";
 import { urls } from "../urls";
 
-export interface FriendData {
-  status: "friend" | "requestedByUser" | "requestedByOther";
-  name: string;
-  online: boolean;
-}
 
 export interface RequestableUserData {
   name: string;
@@ -84,21 +82,27 @@ const FriendsSection = () => {
   
   }, []);
 
-  const add_chat = async (user_names: string[]) => {
-    const response = await fetch(urls.add_chat, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "X-CSRFToken": csrfToken,
-      },
-      body: JSON.stringify({ requested_user_names: user_names }),
-    });
-    const data = await response.json();
-    console.log(data);
-    await refreshFriendsSection();
-  };
 
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
+  const addNewChatClicked = async () => {
+    let response: SuccessResponse | ErrorResponse;
+    if (selectedFriends.length === 0) { //display error?
+      response = {success: false, message: "No users selected. Not sent to server."};
+    }
+    else {
+      response = await createChat({usernames: selectedFriends}, csrfToken);
+    }
+    if (response.success) {
+      setSelectedFriends([]);
+      // do we want to also switch to new chat? will need to pass setChatId to this component as prop if so. or get it from context, which is probaly reasonable. 
+    }
+    else {
+      alert(response.message);
+    }
+  };
+
+
+
   const friendsElement = (
     <Accordion.Item key="friends" value="friends">
       <Accordion.Control>
@@ -162,7 +166,10 @@ const FriendsSection = () => {
         </ScrollArea>
         <Button
           leftSection={<IconMessageCirclePlus />}
-          onClick={() => add_chat(selectedFriends)}
+          onClick={() => {
+            addNewChatClicked();
+          }
+        }
         >
           Create Chat
         </Button>

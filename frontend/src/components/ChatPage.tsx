@@ -16,8 +16,6 @@ interface ChatPageProps {
   logoutUrl: string;
   getNewMessagesUrl: string;
   sendMessageUrl: string;
-  // getChatsUrl: string;
-  getFriendInfoUrl: string;
   csrfToken: string;
 }
 
@@ -36,8 +34,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   logoutUrl,
   getNewMessagesUrl,
   sendMessageUrl,
-  // getChatsUrl,
-  getFriendInfoUrl,
   csrfToken,
 }) => {
   if (typeof chatId_initial === "string") {

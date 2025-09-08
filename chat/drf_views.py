@@ -8,6 +8,7 @@ from .serializers import (
     ErrorResponseSerializer,
     ChatUserSerializer,
     ChatUserMinimalSerializer,
+    ChatUsersMinimalSerializer,
     FriendsListSerializer,
     MessageSerializer,
     ChatSerializer,
@@ -260,6 +261,47 @@ def reject_friend_request(request):
         return Response(
             {"success": True, "message": "Friend request rejected"},
             status=status.HTTP_200_OK,
+        )
+    else:
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+
+@extend_schema(
+    description="Create a chat with a list of users",
+    request=ChatUsersMinimalSerializer,
+    responses={
+        200: SuccessResponseSerializer,
+        400: ErrorResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+def create_chat(request):
+    chat_user = ChatUser.objects.get(user=request.user)
+    serializer = ChatUsersMinimalSerializer(data=request.data)
+    if serializer.is_valid():
+        chat_users = ChatUser.objects.filter(
+            user__username__in=serializer.data.get("usernames")
+        )
+        # check that we found all users
+        if len(chat_users) != len(serializer.data.get("usernames")):
+            return Response(
+                {
+                    "success": False,
+                    f"message": "Some users not found. Looked for {len(serializer.data.get('usernames'))} users, found {len(chat_users)}",
+                },
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        chat_users = [chat_user for chat_user in chat_users]
+        chat_users.append(chat_user)
+        new_chat = Chat.objects.create()
+        new_chat.users.set(chat_users)
+        new_chat.save()
+        return Response(
+            {"success": True, "message": "Chat created successfully"}
         )
     else:
         return Response(

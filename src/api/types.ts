@@ -38,6 +38,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/create_chat/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Create a chat with a list of users */
+        post: operations["api_create_chat_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/get_chat_data/": {
         parameters: {
             query?: never;
@@ -178,6 +195,9 @@ export interface components {
         ChatUserMinimal: {
             username: string;
         };
+        ChatUsersMinimal: {
+            usernames: string[];
+        };
         ChatWithHistory: {
             chat_id: number;
             chat_name: string;
@@ -272,6 +292,47 @@ export interface operations {
                 "application/json": components["schemas"]["ChatUserMinimal"];
                 "application/x-www-form-urlencoded": components["schemas"]["ChatUserMinimal"];
                 "multipart/form-data": components["schemas"]["ChatUserMinimal"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    api_create_chat_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChatUsersMinimal"];
+                "application/x-www-form-urlencoded": components["schemas"]["ChatUsersMinimal"];
+                "multipart/form-data": components["schemas"]["ChatUsersMinimal"];
             };
         };
         responses: {

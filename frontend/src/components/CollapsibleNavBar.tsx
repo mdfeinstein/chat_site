@@ -26,7 +26,6 @@ import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
 import { ActionIcon } from "@mantine/core";
 import type { ChatData } from "./ChatsSection";
-import type { FriendData } from "./FriendsSection";
 import { getChatData, getChatsWithHistory } from "../api/api";
 import type { GetChatWithHistoryResponse, 
   GetChatsWithHistoryResponse } from "../api/api";
@@ -76,34 +75,18 @@ const CollapsibleNavBar = ({
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }) => {
-  const updateChatsData = async () => {
-    const data = await getChatsWithHistory();
-    const chats : GetChatWithHistoryResponse[] = data;
-    setChatData(chats);
-  };
 
-  // const getFriendsData = async () => {
-  //   const response = await fetch(getFriendInfoUrl);
-  //   const data = await response.json();
-  //   setFriendData(data);
-  // };
 
   const [section, setSection] = useState<"Chats" | "Friends">("Chats");
-  const [chatData, setChatData] = useState<GetChatWithHistoryResponse[]>([]);
-  // const [friendData, setFriendData] = useState<FriendData[]>([]);
+
 
   const chatsElement = (
     <ChatsSection
-      chatData={chatData!}
       setChatDetailsFunc={setChatDetailsFunc}
       selectedChatId={selectedChatId}
     />
   );
   const friendsElement = <FriendsSection />;
-  useEffect(() => {
-    updateChatsData();
-  }, []);
-
 
 
   return (

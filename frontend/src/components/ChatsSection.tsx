@@ -1,7 +1,8 @@
 import { Paper, ScrollArea, Stack, Text } from "@mantine/core";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { GetChatWithHistoryResponse } from "../api/api";
+import type { GetChatWithHistoryResponse, GetChatsWithHistoryResponse } from "../api/api";
+import { getChatsWithHistory } from "../api/api";
 
 export interface ChatData {
   id: number;
@@ -25,18 +26,33 @@ const formatDate = (createdAt: string) => {
   });
 };
 
-interface ChatsSectionProps {
-  chatData: GetChatWithHistoryResponse[];
+export interface ChatsSectionProps {
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }
 
 const ChatsSection = ({
-  chatData,
   setChatDetailsFunc,
   selectedChatId,
 }: ChatsSectionProps) => {
+
   const [hoveredChatId, setHoveredChatId]=useState<number|null>(null);
+  const [chatData, setChatData] = useState<GetChatsWithHistoryResponse>({chats: []});
+
+  const updateChatData = async () => {
+    const data = await getChatsWithHistory();
+    setChatData(data);
+  };
+
+  useEffect(() => {
+    updateChatData();
+    const interval = setInterval(() => {
+    updateChatData();
+    }, 4000);
+
+    return () => clearInterval(interval); // cleanup on unmount
+  }, []);
+
   return (
     <ScrollArea
     h={600}
@@ -51,7 +67,7 @@ const ChatsSection = ({
       <Stack
       >
 
-        {chatData.map((chat) => (
+        {chatData.chats.map((chat) => (
           <Paper
             onMouseEnter={() => setHoveredChatId(chat.chat_id)}
             onMouseLeave={() => setHoveredChatId(null)}

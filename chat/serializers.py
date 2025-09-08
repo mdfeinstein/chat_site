@@ -30,6 +30,10 @@ class ChatUserMinimalSerializer(serializers.Serializer):
     username = serializers.CharField()
 
 
+class ChatUsersMinimalSerializer(serializers.Serializer):
+    usernames = serializers.ListField(child=serializers.CharField())
+
+
 class FriendsListSerializer(serializers.ModelSerializer):
     class Meta:
         model = FriendsList

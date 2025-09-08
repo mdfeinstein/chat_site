@@ -4,6 +4,7 @@ import type { components } from "./../../../src/api/types";
 export type SuccessResponse = components['schemas']['SuccessResponse'];
 export type ErrorResponse = components['schemas']['ErrorResponse'];
 export type ChatUserMinimal = components['schemas']['ChatUserMinimal'];
+export type ChatUsersMinimal = components['schemas']['ChatUsersMinimal'];
 
 const API_PATHS = {
   getChatData: '/api/get_chat_data/',
@@ -13,7 +14,8 @@ const API_PATHS = {
   cancelFriendRequest: '/api/cancel_request/',
   acceptFriendRequest: '/api/accept_friend_request/',
   rejectFriendRequest: '/api/reject_friend_request/',
-}
+  createChat: '/api/create_chat/',
+};
 
 
 export type GetChatDataResponse = paths['/api/get_chat_data/']['get']['responses']['200']['content']['application/json'];
@@ -28,8 +30,7 @@ export type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['
 export const getChatsWithHistory = async () => {
   const response = await fetch('/api/get_chats_with_history/');
   const data : GetChatsWithHistoryResponse = await response.json();
-  const chats : GetChatWithHistoryResponse[] = data.chats;
-  return chats;
+  return data;
 };
 
 export type GetFriendDataResponse = paths['/api/get_friend_data/']['get']['responses']['200']['content']['application/json'];
@@ -81,6 +82,19 @@ export const acceptFriendRequest = async (data: ChatUserMinimal, csrfToken: stri
 
 export const rejectFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
   const response = await fetch('/api/reject_friend_request/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
+
+export const createChat = async (data: ChatUsersMinimal, csrfToken: string) => {
+  const response = await fetch('/api/create_chat/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',

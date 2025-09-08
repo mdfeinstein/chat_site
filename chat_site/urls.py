@@ -76,6 +76,11 @@ urlpatterns = [
         chat.drf_views.reject_friend_request,
         name="reject_friend_request_api",
     ),
+    path(
+        "api/create_chat/",
+        chat.drf_views.create_chat,
+        name="create_chat_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(
