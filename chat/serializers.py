@@ -85,16 +85,29 @@ class ChatSerializer(serializers.ModelSerializer):
 
 class ChatDataSerializer(serializers.Serializer):
     chat_id = serializers.IntegerField()
-    chat_name = serializers.CharField()
+    chat_usernames = serializers.ListField(
+        child=serializers.CharField()
+    )
+    exited_chat_usernames = serializers.ListField(
+        child=serializers.CharField()
+    )
     messages = MessageSerializer(many=True)
 
     @classmethod
     def from_chat(cls, chat, messages):
+        chat_usernames = [
+            chat_user.user.username for chat_user in chat.users.all()
+        ]
+        exited_chat_usernames = [
+            chat_user.user.username
+            for chat_user in chat.usersExited.all()
+        ]
         return cls(
             {
-                "messages": messages,
-                "chat_name": str(chat),
                 "chat_id": chat.pk,
+                "chat_usernames": chat_usernames,
+                "exited_chat_usernames": exited_chat_usernames,
+                "messages": messages,
             }
         )
 

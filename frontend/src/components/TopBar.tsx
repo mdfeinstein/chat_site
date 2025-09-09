@@ -1,28 +1,37 @@
 // TopBar.tsx
 import React from 'react';
-import { Group, Button, Title, Box, Text } from '@mantine/core';
+import { Group, Button, Title, Box, Text, Menu, Tooltip } from '@mantine/core';
 import { useChatPageContext } from './ChatPage';
-import { exitChat } from '../api/api';
+import { exitChat, getChatsWithHistory } from '../api/api';
+import type { GetChatDataResponse } from '../api/api';
 import { userInfo } from 'os';
 import { useMantineTheme } from '@mantine/core';
 
 import {IconDoorExit, IconUserCancel} from '@tabler/icons-react';
 
 interface TopBarProps {
-  chatName: string;
-  chatId: number;
+  chatData: GetChatDataResponse;
+  setChatDetailsFunc: (chatId: number) => void;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ 
-  chatName, 
-  chatId, 
+  chatData, 
+  setChatDetailsFunc,
 }) => {
   const {chatUser, csrfToken} = useChatPageContext();
+  let usersRemaining : string[] = [];
+  chatData.chat_usernames.forEach((username) => {
+    if (!chatData.exited_chat_usernames.includes(username)) {
+      usersRemaining.push(username);
+    }
+  });
+  const exitedUsers = chatData.exited_chat_usernames;
 
   const exitChatFunc = async () => {
-    const response = await exitChat(chatId, csrfToken);
+    const response = await exitChat(chatData.chat_id, csrfToken);
     if (response.success) {
-      //navigate to different chat... need a func passed as a prop for this.
+      const chats_data = await getChatsWithHistory();
+      setChatDetailsFunc(chats_data.chats[0].chat_id);
     }
     else {
       console.log(response.message);
@@ -64,7 +73,21 @@ const TopBar: React.FC<TopBarProps> = ({
           textAlign: 'center',
         }}
       >
-        {chatName}
+        <Group>
+        <Text fz="xl"> Chat with: </Text>
+        {usersRemaining.map((username) => (
+          <Text fz="xl"> {username} </Text>
+        ))}
+        {
+        (exitedUsers.length > 0) && (
+          <Tooltip label={exitedUsers.join(", ")}>
+            <Text fz="lg" c="dimmed" ml="sm">
+              {exitedUsers.length} exited
+            </Text>
+          </Tooltip>
+        )
+        }
+        </Group>
       </Title>
 
       <Group 
@@ -73,16 +96,26 @@ const TopBar: React.FC<TopBarProps> = ({
           gap: '0.5rem',
         }}
       >
-
+        <Menu>
+          <Menu.Target>
           <Button
           variant="outline"
           // gradient={{ from: 'red', to: 'darkred' }}
-          onClick={exitChatFunc}
+          // onClick={exitChatFunc}
           color= {useMantineTheme().colors.red[8]}
           >
             Exit Chat
             <IconDoorExit/>
           </Button>
+          </Menu.Target>
+          <Menu.Dropdown>
+            <Menu.Label> Are you sure?</Menu.Label>
+            <Menu.Item
+              onClick={exitChatFunc}
+              >Yes</Menu.Item>
+            <Menu.Item color="red">No</Menu.Item>
+          </Menu.Dropdown>
+          </Menu>
 
           <Button
             variant="outline"

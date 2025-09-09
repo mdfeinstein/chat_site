@@ -268,7 +268,8 @@ export interface components {
     schemas: {
         ChatData: {
             chat_id: number;
-            chat_name: string;
+            chat_usernames: string[];
+            exited_chat_usernames: string[];
             messages: components["schemas"]["Message"][];
         };
         ChatUser: {
@@ -497,6 +498,14 @@ export interface operations {
                     "application/json": components["schemas"]["ChatData"];
                 };
             };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
         };
     };
     api_get_chat_data_retrieve_2: {
@@ -516,6 +525,14 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChatData"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

@@ -30,7 +30,7 @@ from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 @extend_schema(
     description="Get chat data for a specific chat",
-    responses={200: ChatDataSerializer},
+    responses={200: ChatDataSerializer, 404: ErrorResponseSerializer},
     #  parameters=[OpenApiParameter(name="chat_id", type=int, location=OpenApiParameter.QUERY)]
 )
 @api_view(["GET"])
@@ -43,7 +43,8 @@ def get_chat_data(request, chat_id=None):
     if chat is None:
         return Response(
             {
-                "message": "Chat with this ID either does not exist or you are not a member"
+                "success": False,
+                "message": "Chat with this ID either does not exist or you are not a member",
             },
             status=status.HTTP_404_NOT_FOUND,
         )
@@ -63,6 +64,7 @@ def get_chats_with_history(request):
     chat_user = ChatUser.objects.get(user=request.user)
     chats = (
         Chat.objects.filter(users=chat_user)
+        .exclude(usersExited=chat_user)
         .annotate(last_message_time=Max("messages__createdAt"))
         .order_by("-last_message_time")
     )

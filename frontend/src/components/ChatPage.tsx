@@ -38,7 +38,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
   }
   const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
   const [chatId, setChatId] = useState<number>(chatId_initial);
-  const [chatName, setChatName] = useState<string>("");
+  const [chatData, setChatData] = useState<GetChatDataResponse>({
+    chat_id:-1,
+    chat_usernames: [],
+    exited_chat_usernames: [],
+    messages: [],
+  } as GetChatDataResponse);
+  
   const [isNavBarCollapsed, setIsNavBarCollapsed] = useState<boolean>(true);
   const [initialMessages, setInitialMessages] = useState<Message[]>([]);
   const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
@@ -55,13 +61,12 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
       const data = await getChatData(chatId);
-      setChatName("Chat with: " + data.chat_name);
+      setChatData(data);
       setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
       setInitialMessagesLoaded(true);
     }
     else {
-      setChatName("No Chats Found. Start One in the Friends Tab!");
-
+      // setChatName("No Chats Found. Start One in the Friends Tab!");
     }
   };
 
@@ -130,12 +135,11 @@ const ChatPage: React.FC<ChatPageProps> = ({
         <Box
           style={{
             height: "10vh",
-            // width: '100%',
           }}
         >
           <TopBar
-            chatName={chatName}
-            chatId={chatId}
+            chatData={chatData}
+            setChatDetailsFunc={setChatDetailsFunc}
           />
         </Box>
 
