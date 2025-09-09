@@ -27,6 +27,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
   const [lastMessageNumber, setLastMessageNumber] = useState<number>(
     initialMessages.length > 0 ? initialMessages[initialMessages.length - 1].message.messageNumber : 0
   );
+  const [scrolledToBottom, setScrolledToBottom] = useState<boolean>(true);
 
   // Get the user info from the context
   const { chatUser } = useChatPageContext();
@@ -63,17 +64,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     }
   };
   
-
-  const isScrolledToBottom: ()=>boolean = () => {
-  if (containerRef.current) {
-    const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
-    // Allow a small tolerance (1-5px) for rounding errors and browser inconsistencies
-    const tolerance = 5;
-    return scrollHeight - scrollTop - clientHeight <= tolerance;
-  }
-  return false;
-  };
-
   const fetchNewMessagesOnce = async () => {
     if (chatId===-1) return;
     // console.log("fetch with last message number: ", lastMessageNumberRef.current);
@@ -105,7 +95,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     // Add new messages to the state
     setMessages(prevMessages => [...prevMessages, ...newMessages]);
     //scroll to bottom if new message is from this user
-    if (thisUserInMessages || isScrolledToBottom() ) {
+    if (thisUserInMessages || scrolledToBottom ) {
       scrollToBottom();
     }
   };
@@ -150,6 +140,18 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       viewportRef={containerRef}
       // h="80vh"
       w="90%"
+      onScrollPositionChange={(position) => {
+        if (containerRef.current) {
+          const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+          const tolerance = 5;
+          if (scrollHeight - scrollTop - clientHeight <= tolerance) {
+            if (!scrolledToBottom) //only switch if needed to avoid adding to render queue
+              setScrolledToBottom(true);
+        } else {
+          if (scrolledToBottom) //only switch if needed to avoid adding to render queue
+            setScrolledToBottom(false);
+        }
+      }}}
       style={{
         padding: '0rem',
         margin: '0 auto',
@@ -177,7 +179,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
         position: 'fixed',
         bottom: "20%",
         right: "10%",
-        // opacity: isScrolledToBottom() ? 0 : 1
+        opacity: scrolledToBottom ? 0.1 : 1
       }}
       />
 

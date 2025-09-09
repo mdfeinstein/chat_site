@@ -57,6 +57,10 @@ class MessageSerializer(serializers.ModelSerializer):
         ]
 
 
+class NewMessageSerializer(serializers.Serializer):
+    text = serializers.CharField()
+
+
 class MessagesSerializer(serializers.Serializer):
     messages = MessageSerializer(many=True)
 

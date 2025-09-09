@@ -211,6 +211,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/send_message/{chat_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** @description Send a message to a chat */
+        post: operations["api_send_message_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/send_request/": {
         parameters: {
             query?: never;
@@ -275,6 +292,9 @@ export interface components {
             readonly createdAt: string;
             text: string;
             readonly messageNumber: number;
+        };
+        NewMessage: {
+            text: string;
         };
         SuccessResponse: {
             /** @default true */
@@ -642,6 +662,50 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    api_send_message_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description The id of the chat to send the message to */
+                chat_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["NewMessage"];
+                "application/x-www-form-urlencoded": components["schemas"]["NewMessage"];
+                "multipart/form-data": components["schemas"]["NewMessage"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SuccessResponse"];
+                };
+            };
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
         };

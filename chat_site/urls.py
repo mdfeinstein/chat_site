@@ -96,6 +96,11 @@ urlpatterns = [
         chat.drf_views.get_user_info,
         name="get_user_info_api",
     ),
+    path(
+        "api/send_message/<int:chat_id>/",
+        chat.drf_views.send_message,
+        name="send_message_api",
+    ),
     path("", chat.views.redirect_to_login_or_home, name="landing"),
     path("login", chat.views.login, name="login"),
     path(

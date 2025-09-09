@@ -11,6 +11,7 @@ from .serializers import (
     ChatUsersMinimalSerializer,
     FriendsListSerializer,
     MessageSerializer,
+    NewMessageSerializer,
     MessagesSerializer,
     MessageRequestSerializer,
     ChatSerializer,
@@ -422,3 +423,57 @@ def get_messages(request, chat_id):
 def get_user_info(request):
     chat_user = ChatUser.objects.get(user=request.user)
     return Response(ChatUserSerializer(chat_user).data)
+
+
+@extend_schema(
+    description="Send a message to a chat",
+    parameters=[
+        OpenApiParameter(
+            name="chat_id",
+            type=int,
+            location=OpenApiParameter.PATH,
+            description="The id of the chat to send the message to",
+        )
+    ],
+    request=NewMessageSerializer,
+    responses={
+        200: SuccessResponseSerializer,
+        400: ErrorResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+def send_message(request, chat_id):
+    chat_user = ChatUser.objects.get(user=request.user)
+    serializer = NewMessageSerializer(
+        data=request.data,
+    )
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+    # check user is in chat
+    if not Chat.objects.get(pk=chat_id).users.get(pk=chat_user.pk):
+        return Response(
+            {"success": False, "message": "User not in chat"},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    # should have an idempotent check here...
+
+    message_count = Message.objects.filter(
+        chat=Chat.objects.get(pk=chat_id)
+    ).count()
+
+    message = Message(
+        chat=Chat.objects.get(pk=chat_id),
+        sender=chat_user,
+        text=serializer.data.get("text"),
+        message_number=message_count,
+    )
+    message.save()
+
+    return Response(
+        {"success": True, "message": "Message sent successfully"}
+    )

@@ -7,6 +7,7 @@ export type ChatUserMinimal = components['schemas']['ChatUserMinimal'];
 export type ChatUsersMinimal = components['schemas']['ChatUsersMinimal'];
 export type MessageResponse = components['schemas']['Message'];
 export type ChatUserResponse = components['schemas']['ChatUser'];
+export type NewMessageRequest = components['schemas']['NewMessage'];
 
 const API_PATHS = {
   getChatData: '/api/get_chat_data/',
@@ -20,6 +21,7 @@ const API_PATHS = {
   requestableUsers: '/api/requestable_users/',
   getMessages: '/api/get_messages/',
   getUserInfo: '/api/get_user_info/',
+  sendMessage: '/api/send_message/',
 };
 
 
@@ -127,4 +129,17 @@ export const getUserInfo = async () => {
   const response = await fetch('/api/get_user_info/');
   const data : ChatUserResponse = await response.json();
   return data;
+};
+
+export const sendMessage = async (data: NewMessageRequest, chatId: number, csrfToken: string) => {
+  const response = await fetch(`/api/send_message/${chatId}/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
 };

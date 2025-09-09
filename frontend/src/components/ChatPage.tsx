@@ -14,7 +14,6 @@ interface ChatPageProps {
   homeUrl: string;
   exitChatUrl: string;
   logoutUrl: string;
-  sendMessageUrl: string;
   csrfToken: string;
 }
 
@@ -32,7 +31,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   homeUrl,
   exitChatUrl,
   logoutUrl,
-  sendMessageUrl,
   csrfToken,
 }) => {
   if (typeof chatId_initial === "string") {
@@ -172,9 +170,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           }}
         >
           <SendMessageForm
-            sendMessageUrl={sendMessageUrl}
             chatId={chatId}
-            csrfToken={csrfToken}
           />
         </Box>
       </Box>

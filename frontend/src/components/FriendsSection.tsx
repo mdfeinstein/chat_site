@@ -11,6 +11,8 @@ import {
   Tooltip,
   Box,
   Chip,
+  useMantineTheme,
+  Flex
 } from "@mantine/core";
 import { use, useEffect, useState, useRef } from "react";
 import React from "react";
@@ -39,6 +41,8 @@ import { useChatPageContext } from "./ChatPage";
 
 
 const FriendsSection = () => {
+  const theme = useMantineTheme();
+
   const [requestableUsers, setRequestableUsers] = useState<
     ChatUsersMinimal
   >({usernames: []});
@@ -200,10 +204,13 @@ const FriendsSection = () => {
       </Accordion.Control>
       <Accordion.Panel>
         <Box
+          w="100%"
+          mb={10}
           style={{
             display: "flex",
             flexDirection: "row",
             alignItems: "center",
+            justifyContent: "space-between",
             gap: "0.5rem",
           }}
         >
@@ -220,6 +227,9 @@ const FriendsSection = () => {
                 ) || null
               )
             }
+            style={{
+              width: "90%",
+            }}
           />
           <Tooltip label="Send Request" position="bottom" withArrow>
             <ActionIcon
@@ -235,19 +245,30 @@ const FriendsSection = () => {
             </ActionIcon>
           </Tooltip>
         </Box>
-        <ScrollArea h={400}>
-          <Stack>
+        <Box
+        
+        bd={'2px solid '+theme.colors.gray[2]}
+        bdrs={10}
+        >
+        <ScrollArea 
+        h={400}
+        p={2}
+        >
+          <Stack
+          gap="xs"
+          >
             {friendData.requested_users.map((friend) => (
               <Paper
                 key={friend.username}
                 shadow="xl"
-                p="md"
+                p="xs"
                 withBorder
                 radius="lg"
-                mb="0rem"
                 style={{
                   display: "flex",
                   flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
                 <Text fw={700} fz="md" c="red.8" mb="0.5rem">
@@ -256,8 +277,7 @@ const FriendsSection = () => {
                 <Tooltip label="Cancel Request" position="bottom" withArrow>
                   <ActionIcon
                     color="red"
-                    size="lg"
-                    ml="md"
+                    size="md"
                     onClick={(e) => {
                       cancelRequest(friend.username);
                     }}
@@ -269,6 +289,7 @@ const FriendsSection = () => {
             ))}
           </Stack>
         </ScrollArea>
+        </Box>
       </Accordion.Panel>
     </Accordion.Item>
   );
@@ -306,16 +327,22 @@ const FriendsSection = () => {
                 style={{
                   display: "flex",
                   flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
                 <Text fw={700} fz="md" mb="0.5rem">
                   {friend.username}
                 </Text>
+                <Flex
+                  justify={'flex-end'}
+                  align={'center'}
+                  gap={"xs"}
+                >
                 <Tooltip label="Accept Invite" position="bottom" withArrow>
                   <ActionIcon
                     color="green"
                     size="lg"
-                    ml="xs"
                     onClick={() => acceptRequest(friend.username)}
                   >
                     <IconUserCheck />
@@ -325,12 +352,12 @@ const FriendsSection = () => {
                   <ActionIcon
                     color="red"
                     size="lg"
-                    ml="xs"
                     onClick={() => rejectRequest(friend.username)}
                   >
                     <IconUserX />
                   </ActionIcon>
                 </Tooltip>
+                </Flex>
               </Paper>
             ))}
           </Stack>

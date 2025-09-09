@@ -470,6 +470,54 @@ paths:
                 type: object
                 additionalProperties: {}
           description: ''
+  /api/send_message/{chat_id}/:
+    post:
+      operationId: api_send_message_create
+      description: Send a message to a chat
+      parameters:
+      - in: path
+        name: chat_id
+        schema:
+          type: integer
+        description: The id of the chat to send the message to
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/NewMessage'
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/send_request/:
     post:
       operationId: api_send_request_create
@@ -640,6 +688,13 @@ components:
       - id
       - messageNumber
       - sender
+      - text
+    NewMessage:
+      type: object
+      properties:
+        text:
+          type: string
+      required:
       - text
     SuccessResponse:
       type: object
