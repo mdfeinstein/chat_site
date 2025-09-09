@@ -136,10 +136,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
           <TopBar
             chatName={chatName}
             chatId={chatId}
-            homeUrl={homeUrl}
-            exitChatUrl={exitChatUrl}
-            logoutUrl={logoutUrl}
-            csrfToken={csrfToken}
           />
         </Box>
 

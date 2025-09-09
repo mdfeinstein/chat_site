@@ -477,3 +477,41 @@ def send_message(request, chat_id):
     return Response(
         {"success": True, "message": "Message sent successfully"}
     )
+
+
+@extend_schema(
+    description="User exits chat",
+    parameters=[
+        OpenApiParameter(
+            name="chat_id",
+            type=int,
+            location=OpenApiParameter.PATH,
+            description="The id of the chat to exit",
+        )
+    ],
+    request=None,
+    responses={
+        200: SuccessResponseSerializer,
+        404: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+def exit_chat(request, chat_id):
+    chat_user = ChatUser.objects.get(user=request.user)
+    chat = Chat.objects.get(pk=chat_id)
+    if chat.users.filter(pk=chat_user.pk).exists():
+        chat.usersExited.add(chat_user)
+        chat.save()
+        chat_deleted: bool = chat.delete_if_all_users_exited()
+        message = (
+            "Chat exited and deleted"
+            if chat_deleted
+            else "Chat exited successfully"
+        )
+        return Response({"success": True, "message": message})
+
+    else:
+        return Response(
+            {"success": False, "message": "User not in chat"},
+            status=status.HTTP_404_NOT_FOUND,
+        )

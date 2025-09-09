@@ -126,6 +126,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
           description: ''
+  /api/exit_chat/{chat_id}/:
+    post:
+      operationId: api_exit_chat_create
+      description: User exits chat
+      parameters:
+      - in: path
+        name: chat_id
+        schema:
+          type: integer
+        description: The id of the chat to exit
+        required: true
+      tags:
+      - api
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: ''
   /api/get_chat_data/:
     get:
       operationId: api_get_chat_data_retrieve

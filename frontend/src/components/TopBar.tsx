@@ -2,26 +2,33 @@
 import React from 'react';
 import { Group, Button, Title, Box, Text } from '@mantine/core';
 import { useChatPageContext } from './ChatPage';
+import { exitChat } from '../api/api';
 import { userInfo } from 'os';
+import { useMantineTheme } from '@mantine/core';
+
+import {IconDoorExit, IconUserCancel} from '@tabler/icons-react';
 
 interface TopBarProps {
   chatName: string;
-  chatId: string | number;
-  homeUrl: string;
-  exitChatUrl: string;
-  logoutUrl: string;
-  csrfToken: string;
+  chatId: number;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ 
   chatName, 
   chatId, 
-  homeUrl, 
-  exitChatUrl, 
-  logoutUrl, 
-  csrfToken 
 }) => {
-  const username = useChatPageContext().chatUser.username;
+  const {chatUser, csrfToken} = useChatPageContext();
+
+  const exitChatFunc = async () => {
+    const response = await exitChat(chatId, csrfToken);
+    if (response.success) {
+      //navigate to different chat... need a func passed as a prop for this.
+    }
+    else {
+      console.log(response.message);
+    }
+  };
+
   return (
     <Box
       style={{
@@ -66,27 +73,31 @@ const TopBar: React.FC<TopBarProps> = ({
           gap: '0.5rem',
         }}
       >
-        <form method="post" action={exitChatUrl}>
-          <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-          <input type="hidden" name="chat_pk" value={chatId} />
-          <Button type="submit" variant="outline" color="blue">
-            Exit Chat
-          </Button>
-        </form>
 
-        <form method="post" action={logoutUrl}>
-          <input type="hidden" name="csrfmiddlewaretoken" value={csrfToken} />
-          <Button type="submit" variant="outline" color="red">
-            Logout
+          <Button
+          variant="outline"
+          // gradient={{ from: 'red', to: 'darkred' }}
+          onClick={exitChatFunc}
+          color= {useMantineTheme().colors.red[8]}
+          >
+            Exit Chat
+            <IconDoorExit/>
           </Button>
-        </form>
+
+          <Button
+            variant="outline"
+            color= {useMantineTheme().colors.red[6]}
+            >
+            Logout
+            <IconUserCancel/>
+          </Button>
         <Text 
         size="xl"
         ta="center"
         style={{
           whiteSpace: 'pre-wrap',
         }}
-        > Welcome{'\n'}{username} </Text>
+        > Welcome{'\n'}{chatUser.username} </Text>
       </Group>
     </Box>
   );

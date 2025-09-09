@@ -38,6 +38,13 @@ class Chat(models.Model):
     def __repr__(self):
         return self.__str__()
 
+    def delete_if_all_users_exited(self):
+        if self.usersExited.count() == self.users.count():
+            self.delete()
+            return True
+        else:
+            return False
+
 
 class Message(models.Model):
     chat = models.ForeignKey(

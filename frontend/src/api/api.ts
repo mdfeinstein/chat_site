@@ -143,3 +143,15 @@ export const sendMessage = async (data: NewMessageRequest, chatId: number, csrfT
   const responseMessage : SuccessResponse | ErrorResponse = await response.json();
   return responseMessage;
 };
+
+export const exitChat = async (chatId: number, csrfToken: string) => {
+  const response = await fetch(`/api/exit_chat/${chatId}/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'X-CSRFToken': csrfToken,
+    },
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
