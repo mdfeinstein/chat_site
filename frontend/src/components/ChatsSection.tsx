@@ -1,8 +1,9 @@
-import { Paper, ScrollArea, Stack, Text } from "@mantine/core";
-import { useEffect, useState } from "react";
+import { Paper, ScrollArea, Stack, Text, Box, } from "@mantine/core";
+import { useEffect, useState, Fragment } from "react";
 import React from "react";
 import type { GetChatWithHistoryResponse, GetChatsWithHistoryResponse } from "../api/api";
 import { getChatsWithHistory } from "../api/api";
+import { useChatPageContext } from "./ChatPageContext";
 
 
 const formatDate = (createdAt: string) => {
@@ -30,9 +31,9 @@ const ChatsSection = ({
 
   const [hoveredChatId, setHoveredChatId]=useState<number|null>(null);
   const [chatData, setChatData] = useState<GetChatsWithHistoryResponse>({chats: []});
-
+  const { token } = useChatPageContext();
   const updateChatData = async () => {
-    const data = await getChatsWithHistory();
+    const data = await getChatsWithHistory(token!);
     setChatData(data);
   };
 
@@ -81,17 +82,19 @@ const ChatsSection = ({
               <ScrollArea
               h={100}
               >
-              {chat.last_messages.map((msg) => (
-                <>
+              {chat.last_messages.map((msg) => {
+                return (
+                <Box key = {`${chat.chat_id}: ${msg.message_number}`}>
                 <Text fz="sm" c="dimmed">
                   {msg.sender} • {formatDate(msg.createdAt)}
                 </Text>
                 <Text fz="md" c="dimmed">
                   {msg.text}
                 </Text>
-                </>
-
-              ))}
+                </Box>
+                );
+              }
+              )}
               </ScrollArea>
           </Paper>
         ))}

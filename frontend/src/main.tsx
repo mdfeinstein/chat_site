@@ -10,7 +10,8 @@ import { mantineTheme } from "./theme.ts";
 // import MessagesContainer from './components/MessagesContainer';
 // import TopBar from './components/TopBar';
 
-import ChatPage from './components/ChatPage';
+// import ChatPage from './components/ChatPage';
+import AuthGate from "./components/AuthGate";
 
 // Define the interface at module level for reuse
 interface Message {
@@ -81,13 +82,7 @@ const mountChatPage = () => {
     root.render(
       <MantineProvider theme={mantineTheme}>
       <StrictMode>
-        <ChatPage
-          chatId_initial={chatId}
-          homeUrl={homeUrl}
-          exitChatUrl={exitChatUrl}
-          logoutUrl={logoutUrl}
-          csrfToken={csrfToken}
-        />
+        <AuthGate />
       </StrictMode>
       </MantineProvider>
     );

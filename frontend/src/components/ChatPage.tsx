@@ -1,5 +1,6 @@
 import React, { use } from "react";
 import { useState, useEffect, createContext, useContext } from "react";
+import { ChatPageContextProvider, useChatPageContext } from "./ChatPageContext";
 import { Box, Burger } from "@mantine/core";
 import MessagesContainer from "./MessagesContainer";
 import type { Message } from "./MessagesContainer";
@@ -10,33 +11,18 @@ import { getChatData, getUserInfo } from "../api/api";
 import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
 
 interface ChatPageProps {
-  chatId_initial: number | string;
-  homeUrl: string;
-  exitChatUrl: string;
-  logoutUrl: string;
-  csrfToken: string;
+  chatId_initial: number;
 }
 
-interface ChatPageContext {
-  csrfToken: string;
-  chatUser: ChatUserResponse;
-}
-
-const ChatPageContext = createContext<ChatPageContext>({} as ChatPageContext);
-const ChatPageContextProvider = ChatPageContext.Provider;
-export const useChatPageContext = () => useContext(ChatPageContext);
 
 const ChatPage: React.FC<ChatPageProps> = ({
   chatId_initial,
-  homeUrl,
-  exitChatUrl,
-  logoutUrl,
-  csrfToken,
 }) => {
   if (typeof chatId_initial === "string") {
     chatId_initial = parseInt(chatId_initial);
   }
-  const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
+  const { token, chatUser} = useChatPageContext();
+  // const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
   const [chatId, setChatId] = useState<number>(chatId_initial);
   const [chatData, setChatData] = useState<GetChatDataResponse>({
     chat_id:-1,
@@ -52,15 +38,15 @@ const ChatPage: React.FC<ChatPageProps> = ({
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
 
-  const updateUserInfo = async () => {
-    const data = await getUserInfo();
-    setUserInfo(data);
-  };
+  // const updateUserInfo = async () => {
+  //   const data = await getUserInfo();
+  //   setUserInfo(data);
+  // };
 
   const updateChatData = async () => {
     setInitialMessagesLoaded(false);
     if (chatId!==-1) {
-      const data = await getChatData(chatId);
+      const data = await getChatData(chatId, token!);
       setChatData(data);
       setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
       setInitialMessagesLoaded(true);
@@ -70,7 +56,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
-  const setChatDetailsFunc = async (chatId: number) => {
+  const setChatDetailsFunc = (chatId: number) => {
     setChatId(chatId);
   };
 
@@ -78,13 +64,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     updateChatData();
   }, [chatId]);
 
-  useEffect(() => {
-    updateUserInfo();
-  }, []);
+  // useEffect(() => {
+  //   updateUserInfo();
+  // }, []);
 
 
   return (
-    <ChatPageContextProvider value={{ csrfToken: csrfToken, chatUser: userInfo }}>
+    // <ChatPageContextProvider value={{ token: token, chatUser: userInfo }}>
 
     <Box
       style={{
@@ -175,7 +161,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         </Box>
       </Box>
     </Box>
-    </ChatPageContextProvider>
+    // </ChatPageContextProvider>
   );
 };
 

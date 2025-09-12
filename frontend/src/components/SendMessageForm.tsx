@@ -1,4 +1,4 @@
-import { useChatPageContext } from "./ChatPage";
+import { useChatPageContext } from "./ChatPageContext";
 import { sendMessage } from "../api/api";
 import type { NewMessageRequest } from "../api/api";
 import React, { useState } from "react";
@@ -10,7 +10,7 @@ interface SendMessageFormProps {
 }
 
 const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
-  const { csrfToken } = useChatPageContext();
+  const { token } = useChatPageContext();
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
 
@@ -39,7 +39,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
             const data: NewMessageRequest = {
               text: message,
             };
-            sendMessage(data, chatId, csrfToken).then((response) => {
+            sendMessage(data, chatId, token!).then((response) => {
               if (response.success) {
                 setMessage("");
               } else {
@@ -79,7 +79,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
           const data: NewMessageRequest = {
             text: message,
           };
-          const response = await sendMessage(data, chatId, csrfToken);
+          const response = await sendMessage(data, chatId, token!);
           if (response.success) {
             setMessage("");
           } else {

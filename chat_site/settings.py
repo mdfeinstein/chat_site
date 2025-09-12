@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     "django_vite",
     "chat.apps.ChatConfig",
     "rest_framework",
+    "rest_framework.authtoken",
     "drf_spectacular",
 ]
 
@@ -76,6 +77,13 @@ WSGI_APPLICATION = "chat_site.wsgi.application"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
 }
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

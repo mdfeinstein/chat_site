@@ -56,7 +56,7 @@ class Message(models.Model):
     sender = models.ForeignKey(ChatUser, on_delete=models.CASCADE)
     text = models.TextField()
     createdAt = models.DateTimeField(auto_now_add=True)
-    message_number = models.IntegerField(default=0)
+    message_number = models.IntegerField()
 
 
 class FriendsList(models.Model):

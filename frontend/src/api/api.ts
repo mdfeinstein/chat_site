@@ -8,8 +8,14 @@ export type ChatUsersMinimal = components['schemas']['ChatUsersMinimal'];
 export type MessageResponse = components['schemas']['Message'];
 export type ChatUserResponse = components['schemas']['ChatUser'];
 export type NewMessageRequest = components['schemas']['NewMessage'];
+export type AuthTokenRequest = components['schemas']['AuthTokenRequest'];
+export type AuthTokenResponse = components['schemas']['AuthTokenResponse'];
+export type AuthErrorResponse = components['schemas']['AuthErrorResponse'];
+
 
 const API_PATHS = {
+  obtainAuthToken: '/api/token-auth/',
+  revokeAuthToken: '/api/revoke-token/',
   getChatData: '/api/get_chat_data/',
   getChats: '/api/get_chats/',
   getFriendData: '/api/get_friend_data/',
@@ -24,35 +30,76 @@ const API_PATHS = {
   sendMessage: '/api/send_message/',
 };
 
+export const obtainAuthToken = async (data: AuthTokenRequest) => {
+  const response = await fetch('/api/token-auth/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+    },
+    body: JSON.stringify(data),
+  });
+  const responseMessage : AuthTokenResponse | AuthErrorResponse = await response.json();
+  return responseMessage;
+};
+
+export const revokeAuthToken = async (token: string) => {
+  const response = await fetch('/api/revoke-token/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json; charset=utf-8',
+      'Authorization': `Token ${token}`,
+    },
+  });
+  const responseMessage : SuccessResponse | ErrorResponse = await response.json();
+  return responseMessage;
+};
 
 export type GetChatDataResponse = paths['/api/get_chat_data/']['get']['responses']['200']['content']['application/json'];
-export const getChatData = async (chatId: number) => {
-  const response = await fetch(`${API_PATHS.getChatData}${chatId}/`);
+export const getChatData = async (chatId: number, token: string) => {
+  const response = await fetch(`${API_PATHS.getChatData}${chatId}/`,
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : GetChatDataResponse = await response.json();
   return data;
 };
 
 export type GetChatsWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json'];
 export type GetChatWithHistoryResponse = paths['/api/get_chats_with_history/']['get']['responses']['200']['content']['application/json']['chats'][0];
-export const getChatsWithHistory = async () => {
-  const response = await fetch('/api/get_chats_with_history/');
+export const getChatsWithHistory = async (token: string) => {
+  const response = await fetch('/api/get_chats_with_history/',
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : GetChatsWithHistoryResponse = await response.json();
   return data;
 };
 
 export type GetFriendDataResponse = paths['/api/get_friend_data/']['get']['responses']['200']['content']['application/json'];
-export const getFriendData = async () => {
-  const response = await fetch('/api/get_friend_data/');
+export const getFriendData = async (token: string) => {
+  const response = await fetch('/api/get_friend_data/', 
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : GetFriendDataResponse = await response.json();
   return data;
 };
 
-export const sendFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+export const sendFriendRequest = async (data: ChatUserMinimal, token: string) => {
   const response = await fetch('/api/send_request/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -61,12 +108,12 @@ export const sendFriendRequest = async (data: ChatUserMinimal, csrfToken: string
 };
 
 export type CancelFriendRequestRequest = paths['/api/cancel_request/']['post']['requestBody']['content']['application/json'];
-export const cancelFriendRequest = async (data: CancelFriendRequestRequest, csrfToken: string) => {
+export const cancelFriendRequest = async (data: CancelFriendRequestRequest, token: string) => {
   const response = await fetch('/api/cancel_request/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -74,12 +121,12 @@ export const cancelFriendRequest = async (data: CancelFriendRequestRequest, csrf
   return responseMessage;
 };
 
-export const acceptFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+export const acceptFriendRequest = async (data: ChatUserMinimal, token: string) => {
   const response = await fetch('/api/accept_friend_request/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -87,12 +134,12 @@ export const acceptFriendRequest = async (data: ChatUserMinimal, csrfToken: stri
   return responseMessage;
 };
 
-export const rejectFriendRequest = async (data: ChatUserMinimal, csrfToken: string) => {
+export const rejectFriendRequest = async (data: ChatUserMinimal, token: string) => {
   const response = await fetch('/api/reject_friend_request/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -100,12 +147,12 @@ export const rejectFriendRequest = async (data: ChatUserMinimal, csrfToken: stri
   return responseMessage;
 };
 
-export const createChat = async (data: ChatUsersMinimal, csrfToken: string) => {
+export const createChat = async (data: ChatUsersMinimal, token: string) => {
   const response = await fetch('/api/create_chat/', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -113,30 +160,48 @@ export const createChat = async (data: ChatUsersMinimal, csrfToken: string) => {
   return responseMessage;
 };
 
-export const getRequestableUsers = async () => {
-  const response = await fetch('/api/requestable_users/');
+export const getRequestableUsers = async (token: string) => {
+  const response = await fetch('/api/requestable_users/',
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : ChatUsersMinimal = await response.json();
   return data;
 };
 
-export const getMessages = async (chatId: number, startMsgNumber: number, endMsgNumber: number) => {
-  const response = await fetch(`/api/get_messages/${chatId}/?start_msg_number=${startMsgNumber}&end_msg_number=${endMsgNumber}`);
+export const getMessages = async (chatId: number, startMsgNumber: number, endMsgNumber: number, token: string) => {
+  const response = await fetch(`/api/get_messages/${chatId}/?start_msg_number=${startMsgNumber}&end_msg_number=${endMsgNumber}`,
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : MessageResponse[] = await response.json();
   return data;
 };
 
-export const getUserInfo = async () => {
-  const response = await fetch('/api/get_user_info/');
+export const getUserInfo = async (token: string) => {
+  const response = await fetch('/api/get_user_info/',
+    {
+      headers: {
+        'Authorization': `Token ${token}`,
+      },
+    }
+  );
   const data : ChatUserResponse = await response.json();
   return data;
 };
 
-export const sendMessage = async (data: NewMessageRequest, chatId: number, csrfToken: string) => {
+export const sendMessage = async (data: NewMessageRequest, chatId: number, token: string) => {
   const response = await fetch(`/api/send_message/${chatId}/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
     body: JSON.stringify(data),
   });
@@ -144,14 +209,15 @@ export const sendMessage = async (data: NewMessageRequest, chatId: number, csrfT
   return responseMessage;
 };
 
-export const exitChat = async (chatId: number, csrfToken: string) => {
+export const exitChat = async (chatId: number, token: string) => {
   const response = await fetch(`/api/exit_chat/${chatId}/`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
-      'X-CSRFToken': csrfToken,
+      'Authorization': `Token ${token}`,
     },
   });
   const responseMessage : SuccessResponse | ErrorResponse = await response.json();
   return responseMessage;
 };
+

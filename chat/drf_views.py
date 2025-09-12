@@ -1,9 +1,14 @@
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework import status
 from .models import ChatUser, Message, Chat
 from django.db import transaction
 from .serializers import (
+    AuthTokenRequestSerializer,
+    AuthTokenResponseSerializer,
+    AuthErrorResponseSerializer,
     SuccessResponseSerializer,
     ErrorResponseSerializer,
     ChatUserSerializer,
@@ -27,12 +32,44 @@ from django.db.models.functions import Lower
 import json
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 
+# obtain_auth_token = ObtainAuthToken.as_view()
+
+
+# @extend_schema(
+#     description="Login with token",
+#     request=AuthTokenRequestSerializer,
+#     responses={
+#         200: AuthTokenResponseSerializer,
+#         400: AuthErrorResponseSerializer,
+#     },
+# )
+# @api_view(["POST"])
+# @permission_classes([])
+# def login_auth(request):
+#     return obtain_auth_token(request)
+
+
+@extend_schema(
+    description="Logout with token",
+    request=None,
+    responses={
+        200: SuccessResponseSerializer,
+        400: ErrorResponseSerializer,
+    },
+)
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def logout_auth(request):
+    request.user.auth_token.delete()
+    return Response({"success": True, "message": "Token revoked"})
+
 
 @extend_schema(
     description="Get chat data for a specific chat",
     responses={200: ChatDataSerializer, 404: ErrorResponseSerializer},
     #  parameters=[OpenApiParameter(name="chat_id", type=int, location=OpenApiParameter.QUERY)]
 )
+@permission_classes([IsAuthenticated])
 @api_view(["GET"])
 def get_chat_data(request, chat_id=None):
     print(chat_id)
@@ -60,6 +97,7 @@ def get_chat_data(request, chat_id=None):
     #  parameters=[OpenApiParameter(name="chat_id", type=int, location=OpenApiParameter.QUERY)]
 )
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_chats_with_history(request):
     chat_user = ChatUser.objects.get(user=request.user)
     chats = (
@@ -88,6 +126,7 @@ def get_chats_with_history(request):
     responses={200: FriendDataSerializer},
 )
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def friends_list(request):
     chat_user = ChatUser.objects.get(user=request.user)
     friends_list = chat_user.friends_list
@@ -118,6 +157,7 @@ def friends_list(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def send_request(request):
     chat_user = ChatUser.objects.get(user=request.user)
     serializer = ChatUserMinimalSerializer(data=request.data)
@@ -173,6 +213,7 @@ def send_request(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def cancel_request(request):
     chat_user = ChatUser.objects.get(user=request.user)
     # get the requesting user by deserializing the data
@@ -209,6 +250,7 @@ def cancel_request(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def accept_friend_request(request):
     chat_user = ChatUser.objects.get(user=request.user)
     serializer = ChatUserMinimalSerializer(data=request.data)
@@ -249,6 +291,7 @@ def accept_friend_request(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def reject_friend_request(request):
     chat_user = ChatUser.objects.get(user=request.user)
     serializer = ChatUserMinimalSerializer(data=request.data)
@@ -284,6 +327,7 @@ def reject_friend_request(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def create_chat(request):
     chat_user = ChatUser.objects.get(user=request.user)
     serializer = ChatUsersMinimalSerializer(data=request.data)
@@ -320,6 +364,7 @@ def create_chat(request):
     responses={200: ChatUsersMinimalSerializer},
 )
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def requestable_users(request):
     chat_user = ChatUser.objects.get(user=request.user)
     usernames = (
@@ -368,6 +413,7 @@ def requestable_users(request):
     },
 )
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_messages(request, chat_id):
     """
     returns the messages between start_msg_number (inclusive)
@@ -422,6 +468,7 @@ def get_messages(request, chat_id):
     responses={200: ChatUserSerializer},
 )
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_user_info(request):
     chat_user = ChatUser.objects.get(user=request.user)
     return Response(ChatUserSerializer(chat_user).data)
@@ -445,6 +492,7 @@ def get_user_info(request):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def send_message(request, chat_id):
     chat_user = ChatUser.objects.get(user=request.user)
     serializer = NewMessageSerializer(
@@ -498,6 +546,7 @@ def send_message(request, chat_id):
     },
 )
 @api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def exit_chat(request, chat_id):
     chat_user = ChatUser.objects.get(user=request.user)
     chat = Chat.objects.get(pk=chat_id)

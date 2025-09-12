@@ -37,11 +37,12 @@ import {
   createChat,
   getRequestableUsers,
 } from "../api/api";
-import { useChatPageContext } from "./ChatPage";
+import { useChatPageContext } from "./ChatPageContext";
 
 
 const FriendsSection = () => {
   const theme = useMantineTheme();
+  const { token } = useChatPageContext();
 
   const [requestableUsers, setRequestableUsers] = useState<
     ChatUsersMinimal
@@ -54,14 +55,12 @@ const FriendsSection = () => {
   });
 
   const updateFriendData = async () => {
-    const data = await getFriendData();
+    const data = await getFriendData(token!);
     setFriendData(data);
   };
 
-  const { csrfToken } = useChatPageContext();
-
   const updateRequestableUsers = async () => {
-    const data = await getRequestableUsers();
+    const data = await getRequestableUsers(token!);
     setRequestableUsers(data);
   };
 
@@ -88,7 +87,7 @@ const FriendsSection = () => {
       response = {success: false, message: "No users selected. Not sent to server."};
     }
     else {
-      response = await createChat({usernames: selectedFriends}, csrfToken);
+      response = await createChat({usernames: selectedFriends}, token!);
     }
     if (response.success) {
       setSelectedFriends([]);
@@ -177,13 +176,13 @@ const FriendsSection = () => {
 
   const sendRequest = async (friend_name: string) => {
     const friend: ChatUserMinimal = { username: friend_name };
-    await sendFriendRequest(friend, csrfToken);
+    await sendFriendRequest(friend, token!);
     await refreshFriendsSection();
   };
 
   const cancelRequest = async (friend_name: string) => {
     const friend: ChatUserMinimal = { username: friend_name };
-    await cancelFriendRequest(friend, csrfToken);
+    await cancelFriendRequest(friend, token!);
     await refreshFriendsSection();
   };
 
@@ -296,13 +295,13 @@ const FriendsSection = () => {
 
   const acceptRequest = async (friend_name: string) => {
     const friend: ChatUserMinimal = { username: friend_name };
-    await acceptFriendRequest(friend, csrfToken);
+    await acceptFriendRequest(friend, token!);
     await refreshFriendsSection();
   };
 
   const rejectRequest = async (friend_name: string) => {
     const friend: ChatUserMinimal = { username: friend_name };
-    await rejectFriendRequest(friend, csrfToken);
+    await rejectFriendRequest(friend, token!);
     await refreshFriendsSection();
   };
 

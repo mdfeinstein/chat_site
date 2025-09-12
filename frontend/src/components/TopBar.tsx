@@ -1,9 +1,9 @@
 // TopBar.tsx
 import React from 'react';
 import { Group, Button, Title, Box, Text, Menu, Tooltip } from '@mantine/core';
-import { useChatPageContext } from './ChatPage';
-import { exitChat, getChatsWithHistory } from '../api/api';
-import type { GetChatDataResponse } from '../api/api';
+import { useChatPageContext } from './ChatPageContext';
+import { exitChat, getChatsWithHistory, revokeAuthToken } from '../api/api';
+import type { GetChatDataResponse} from '../api/api';
 import { userInfo } from 'os';
 import { useMantineTheme } from '@mantine/core';
 
@@ -18,7 +18,14 @@ const TopBar: React.FC<TopBarProps> = ({
   chatData, 
   setChatDetailsFunc,
 }) => {
-  const {chatUser, csrfToken} = useChatPageContext();
+  const {token, chatUser, setToken, setChatUser} = useChatPageContext();
+  
+  const logoutFunc = async () => {
+    await revokeAuthToken(token!);
+    setToken(null);
+    setChatUser(null);
+  };
+  
   let usersRemaining : string[] = [];
   chatData.chat_usernames.forEach((username) => {
     if (!chatData.exited_chat_usernames.includes(username)) {
@@ -28,9 +35,9 @@ const TopBar: React.FC<TopBarProps> = ({
   const exitedUsers = chatData.exited_chat_usernames;
 
   const exitChatFunc = async () => {
-    const response = await exitChat(chatData.chat_id, csrfToken);
+    const response = await exitChat(chatData.chat_id, token!);
     if (response.success) {
-      const chats_data = await getChatsWithHistory();
+      const chats_data = await getChatsWithHistory(token!);
       setChatDetailsFunc(chats_data.chats[0].chat_id);
     }
     else {
@@ -76,7 +83,7 @@ const TopBar: React.FC<TopBarProps> = ({
         <Group>
         <Text fz="xl"> Chat with: </Text>
         {usersRemaining.map((username) => (
-          <Text fz="xl"> {username} </Text>
+          <Text fz="xl" key = {username}> {username} </Text>
         ))}
         {
         (exitedUsers.length > 0) && (
@@ -120,6 +127,7 @@ const TopBar: React.FC<TopBarProps> = ({
           <Button
             variant="outline"
             color= {useMantineTheme().colors.red[6]}
+            onClick={logoutFunc}
             >
             Logout
             <IconUserCancel/>
@@ -130,7 +138,7 @@ const TopBar: React.FC<TopBarProps> = ({
         style={{
           whiteSpace: 'pre-wrap',
         }}
-        > Welcome{'\n'}{chatUser.username} </Text>
+        > Welcome{'\n'}{chatUser?.username} </Text>
       </Group>
     </Box>
   );

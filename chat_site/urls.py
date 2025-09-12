@@ -18,6 +18,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.contrib.auth import views as auth_views
+from rest_framework.authtoken.views import ObtainAuthToken
+from drf_spectacular.utils import extend_schema
 import chat.views
 import chat.drf_views
 from drf_spectacular.views import (
@@ -25,6 +27,25 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
     SpectacularRedocView,
 )
+from chat.serializers import (
+    AuthTokenRequestSerializer,
+    AuthTokenResponseSerializer,
+    AuthErrorResponseSerializer,
+)
+
+
+class LoginAuthTokenView(ObtainAuthToken):
+    @extend_schema(
+        description="Login with token",
+        request=AuthTokenRequestSerializer,
+        responses={
+            200: AuthTokenResponseSerializer,
+            400: AuthErrorResponseSerializer,
+        },
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -35,7 +56,16 @@ urlpatterns = [
         name="swagger",
     ),
     path("api/redoc/", SpectacularRedocView.as_view(), name="redoc"),
-    # Make chat_id optional by using a path converter with default value
+    path(
+        "api/token-auth/",
+        LoginAuthTokenView.as_view(),
+        name="token_auth_api",
+    ),
+    path(
+        "api/revoke-token/",
+        chat.drf_views.logout_auth,
+        name="logout_api",
+    ),
     path(
         "api/get_chat_data/",
         chat.drf_views.get_chat_data,

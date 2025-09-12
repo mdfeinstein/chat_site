@@ -2,6 +2,27 @@ from rest_framework import serializers
 from .models import ChatUser, Message, Chat, FriendsList
 
 
+class AuthTokenRequestSerializer(serializers.Serializer):
+    username = serializers.CharField()
+    password = serializers.CharField()
+
+
+class AuthTokenResponseSerializer(serializers.Serializer):
+    token = serializers.CharField(read_only=True)
+
+
+class AuthErrorResponseSerializer(serializers.Serializer):
+    non_field_errors = serializers.ListField(
+        child=serializers.CharField(), required=False
+    )
+    username = serializers.ListField(
+        child=serializers.CharField(), required=False
+    )
+    password = serializers.ListField(
+        child=serializers.CharField(), required=False
+    )
+
+
 class SuccessResponseSerializer(serializers.Serializer):
     success = serializers.BooleanField(default=True)
     message = serializers.CharField()
@@ -42,9 +63,6 @@ class FriendsListSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = serializers.StringRelatedField()
-    messageNumber = serializers.IntegerField(
-        source="message_number", read_only=True
-    )
 
     class Meta:
         model = Message
@@ -53,7 +71,7 @@ class MessageSerializer(serializers.ModelSerializer):
             "sender",
             "createdAt",
             "text",
-            "messageNumber",
+            "message_number",
         ]
 
 
