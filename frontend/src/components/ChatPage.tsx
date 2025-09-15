@@ -7,8 +7,9 @@ import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-import { getChatData, getUserInfo } from "../api/api";
+import { getChatData, getUserInfo, getChatsWithHistory } from "../api/api";
 import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
+import { get } from "http";
 
 interface ChatPageProps {
   chatId_initial: number;
@@ -56,6 +57,13 @@ const ChatPage: React.FC<ChatPageProps> = ({
     }
   };
 
+  const getChatsAndSetChatId = async () => {
+    const chats_data = await getChatsWithHistory(token!);
+    if (chats_data.chats.length > 0) {
+      setChatId(chats_data.chats[0].chat_id);
+    }
+  };
+
   const setChatDetailsFunc = (chatId: number) => {
     setChatId(chatId);
   };
@@ -63,6 +71,10 @@ const ChatPage: React.FC<ChatPageProps> = ({
   useEffect(() => {
     updateChatData();
   }, [chatId]);
+
+  useEffect(() => {
+    getChatsAndSetChatId();
+  }, []);
 
   // useEffect(() => {
   //   updateUserInfo();

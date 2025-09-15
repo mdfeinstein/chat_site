@@ -101,23 +101,6 @@ const CollapsibleNavBar = ({
         }}>
           {section === "Chats" ? chatsElement : friendsElement}
         </Box>
-
-        <Box mt="auto" pt={20}>
-          <Stack gap="xs">
-            <NavLink
-              label="Change account"
-              component="a"
-              href="#"
-              onClick={(event) => event.preventDefault()}
-            />
-            <NavLink
-              label="Logout"
-              component="a"
-              href="#"
-              onClick={(event) => event.preventDefault()}
-            />
-          </Stack>
-        </Box>
       </Box>
       <ArrowedMarginTab isCollapsed={isCollapsed} collapser={collapser} />
     </Box>

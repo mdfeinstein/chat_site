@@ -48,7 +48,7 @@ const ChatsSection = ({
 
   return (
     <ScrollArea
-    h={600}
+    h={"90vh"}
     type="always"
     scrollbarSize={8}
     style={{
@@ -83,6 +83,7 @@ const ChatsSection = ({
               h={100}
               >
               {chat.last_messages.map((msg) => {
+
                 return (
                 <Box key = {`${chat.chat_id}: ${msg.message_number}`}>
                 <Text fz="sm" c="dimmed">
