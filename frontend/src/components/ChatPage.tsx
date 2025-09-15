@@ -9,22 +9,16 @@ import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
 import { getChatData, getUserInfo, getChatsWithHistory } from "../api/api";
 import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
-import { get } from "http";
 
 interface ChatPageProps {
-  chatId_initial: number;
 }
 
 
 const ChatPage: React.FC<ChatPageProps> = ({
-  chatId_initial,
 }) => {
-  if (typeof chatId_initial === "string") {
-    chatId_initial = parseInt(chatId_initial);
-  }
   const { token, chatUser} = useChatPageContext();
   // const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
-  const [chatId, setChatId] = useState<number>(chatId_initial);
+  const [chatId, setChatId] = useState<number>(-1);
   const [chatData, setChatData] = useState<GetChatDataResponse>({
     chat_id:-1,
     chat_usernames: [],
@@ -38,11 +32,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   const toggleNavBar = () => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
-
-  // const updateUserInfo = async () => {
-  //   const data = await getUserInfo();
-  //   setUserInfo(data);
-  // };
 
   const updateChatData = async () => {
     setInitialMessagesLoaded(false);

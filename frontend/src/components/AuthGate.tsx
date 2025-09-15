@@ -9,7 +9,7 @@ const AuthGateInner: React.FC = () => {
   if (token === null) {
     return <LoginPage />;
   } else {
-    return <ChatPage chatId_initial={-1} />;
+    return <ChatPage />;
   }
 };
 

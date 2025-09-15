@@ -17,15 +17,6 @@
   </head>
   <body>
     {% csrf_token %}
-    <div
-      id="react-chat-page"
-      data-chat-id="{{ chat_pk }}"
-      data-home-url="{% url 'home' %}"
-      data-exit-chat-url="{% url 'exit_chat' %}"
-      data-logout-url="{% url 'logout' %}"
-      data-get-new-messages-url="{% url 'get_new_messages' %}"
-      data-csrf-token="{{ csrf_token }}"
-      data-get-friend-info-url="{% url 'get_friend_info' %}"
-    ></div>
+    <div id="react-chat-page"></div>
   </body>
 </html>
