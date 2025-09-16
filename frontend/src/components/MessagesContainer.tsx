@@ -27,7 +27,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
     isError: messageQueryError,
   } = useChatMessages(chatId, token!, 250);
 
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Function to scroll to bottom of messages

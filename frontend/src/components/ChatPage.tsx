@@ -11,18 +11,18 @@ import { getChatData, getUserInfo, getChatsWithHistory } from "../api/api";
 import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
 import useChatsWithHistory from "./useChatsWithHistory";
 
+interface ChatPageProps {}
 
-interface ChatPageProps {
-}
-
-
-const ChatPage: React.FC<ChatPageProps> = ({
-}) => {
-  const { token, chatUser} = useChatPageContext();
-  const { data: chatsData, isLoading: chatsLoading, isError: chatsError } = useChatsWithHistory(token!, 4000);
+const ChatPage: React.FC<ChatPageProps> = ({}) => {
+  const { token, chatUser } = useChatPageContext();
+  const {
+    data: chatsData,
+    isLoading: chatsLoading,
+    isError: chatsError,
+  } = useChatsWithHistory(token!, 4000);
   const [chatId, setChatId] = useState<number>(-1);
   const [initialized, setInitialized] = useState<boolean>(false);
-  
+
   const [isNavBarCollapsed, setIsNavBarCollapsed] = useState<boolean>(true);
   const toggleNavBar = () => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
@@ -41,7 +41,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   //   }
   // };
 
-
   const setChatDetailsFunc = (chatId: number) => {
     setChatId(chatId);
   };
@@ -59,7 +58,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
   // useEffect(() => {
   //   updateUserInfo();
   // }, []);
-
 
   return (
     // <ChatPageContextProvider value={{ token: token, chatUser: userInfo }}>
@@ -86,7 +84,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
           width: isNavBarCollapsed ? "20%" : "60%",
           height: "100%",
           backgroundColor: "#f5f5f5",
-          
         }}
       >
         <CollapsibleNavBar
@@ -95,7 +92,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           setChatDetailsFunc={setChatDetailsFunc}
           selectedChatId={chatId}
         />
-        </Box>
+      </Box>
       <Box
         style={{
           // display: 'flex',
@@ -115,14 +112,12 @@ const ChatPage: React.FC<ChatPageProps> = ({
             height: "10vh",
           }}
         >
-          <TopBar
-            chatId={chatId}
-            setChatDetailsFunc={setChatDetailsFunc}
-          />
+          <TopBar chatId={chatId} setChatDetailsFunc={setChatDetailsFunc} />
         </Box>
 
         {/* MessagesContainer - 70% height */}
         <Box
+          // bg="linear-gradient(#f4adad, #befbff)"
           style={{
             height: "80vh",
             width: "100%",
@@ -130,9 +125,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
             justifyContent: "center",
           }}
         >
-          <MessagesContainer
-            chatId={chatId}
-          />
+          <MessagesContainer chatId={chatId} />
         </Box>
 
         {/* SendMessageForm - 20% height */}
@@ -145,9 +138,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
             alignItems: "center",
           }}
         >
-          <SendMessageForm
-            chatId={chatId}
-          />
+          <SendMessageForm chatId={chatId} />
         </Box>
       </Box>
     </Box>
