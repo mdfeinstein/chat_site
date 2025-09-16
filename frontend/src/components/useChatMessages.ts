@@ -28,6 +28,7 @@ const useChatMessages = (chatId: number, token: string, refreshTime: number) => 
       return queryClient.getQueryData<ChatMessagesData>(['messages', chatId]);
       },
       refetchInterval: refreshTime,
+      enabled: chatId != null && chatId !== -1,
     });
     const invalidate = () => {
       queryClient.invalidateQueries({ queryKey: ['messages', chatId] });

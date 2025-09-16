@@ -11,6 +11,7 @@ const useChatData = (chatId: number, token: string, refreshTime: number) => {
       return newData;
       },
       refetchInterval: refreshTime,
+      enabled: chatId != null && chatId !== -1,
     });
   
   const invalidate = () => {

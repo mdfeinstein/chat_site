@@ -44,6 +44,9 @@ import {
 import { useChatPageContext } from "./ChatPageContext";
 import useFriendsData from "./useFriendsData";
 import useRequestableUsers from "./useRequestableUsers";
+import useChatsWithHistory from "./useChatsWithHistory";
+import { useMutation } from "@tanstack/react-query";
+import { create } from "domain";
 
 const FriendsSection = () => {
   const theme = useMantineTheme();
@@ -51,6 +54,10 @@ const FriendsSection = () => {
   const { data: friendsData, refetch: refetchFriendsData } = useFriendsData(
     token!,
     2000
+  );
+  const { refetch: refetchChatsWithHistory } = useChatsWithHistory(
+    token!,
+    60 * 60 * 1000
   );
   const { data: requestableUsers, refetch: refetchRequestableUsers } =
     useRequestableUsers(token!, 2000);
@@ -61,24 +68,38 @@ const FriendsSection = () => {
   };
 
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
-  const addNewChatClicked = async () => {
-    let response: SuccessResponse | ErrorResponse;
-    if (selectedFriends.length === 0) {
-      //display error?
-      response = {
-        success: false,
-        message: "No users selected. Not sent to server.",
-      };
-    } else {
-      response = await createChat({ usernames: selectedFriends }, token!);
-    }
-    if (response.success) {
+
+  const newChatMutation = useMutation({
+    mutationFn: async () =>
+      await createChat({ usernames: selectedFriends }, token!),
+    onSuccess: () => {
       setSelectedFriends([]);
-      // do we want to also switch to new chat? will need to pass setChatId to this component as prop if so. or get it from context, which is probaly reasonable.
-    } else {
-      alert(response.message);
-    }
-  };
+      refetchChatsWithHistory();
+    },
+    onError: (error: ErrorResponse) => {
+      alert(error.message);
+    },
+  });
+
+  const requestFriendMutation = useMutation({
+    mutationFn: (username: string) => sendFriendRequest({ username }, token!),
+    onSuccess: () => {
+      refreshFriendsSection();
+    },
+    onError: (error: ErrorResponse) => {
+      alert(error.message);
+    },
+  });
+
+  const cancelRequestMutation = useMutation({
+    mutationFn: (username: string) => cancelFriendRequest({ username }, token!),
+    onSuccess: () => {
+      refreshFriendsSection();
+    },
+    onError: (error: ErrorResponse) => {
+      alert(error.message);
+    },
+  });
 
   const friendsElement = (
     <Accordion.Item key="friends" value="friends">
@@ -146,7 +167,7 @@ const FriendsSection = () => {
         <Button
           leftSection={<IconMessageCirclePlus />}
           onClick={() => {
-            addNewChatClicked();
+            newChatMutation.mutate();
           }}
         >
           Create Chat
@@ -154,18 +175,6 @@ const FriendsSection = () => {
       </Accordion.Panel>
     </Accordion.Item>
   );
-
-  const sendRequest = async (friend_name: string) => {
-    const friend: ChatUserMinimal = { username: friend_name };
-    await sendFriendRequest(friend, token!);
-    await refreshFriendsSection();
-  };
-
-  const cancelRequest = async (friend_name: string) => {
-    const friend: ChatUserMinimal = { username: friend_name };
-    await cancelFriendRequest(friend, token!);
-    await refreshFriendsSection();
-  };
 
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
@@ -212,7 +221,8 @@ const FriendsSection = () => {
             <ActionIcon
               onClick={() => {
                 if (selectedUser !== null) {
-                  sendRequest(selectedUser);
+                  // sendRequest(selectedUser);
+                  requestFriendMutation.mutate(selectedUser);
                 }
                 setSendRequestMenuOpened(false);
                 setSelectedUser(null);
@@ -247,7 +257,7 @@ const FriendsSection = () => {
                       color="red"
                       size="md"
                       onClick={(e) => {
-                        cancelRequest(friend.username);
+                        cancelRequestMutation.mutate(friend.username);
                       }}
                     >
                       <IconXboxXFilled />
@@ -262,17 +272,25 @@ const FriendsSection = () => {
     </Accordion.Item>
   );
 
-  const acceptRequest = async (friend_name: string) => {
-    const friend: ChatUserMinimal = { username: friend_name };
-    await acceptFriendRequest(friend, token!);
-    await refreshFriendsSection();
-  };
+  const acceptRequestMutation = useMutation({
+    mutationFn: (username: string) => acceptFriendRequest({ username }, token!),
+    onSuccess: () => {
+      refreshFriendsSection();
+    },
+    onError: (error: ErrorResponse) => {
+      alert(error.message);
+    },
+  });
 
-  const rejectRequest = async (friend_name: string) => {
-    const friend: ChatUserMinimal = { username: friend_name };
-    await rejectFriendRequest(friend, token!);
-    await refreshFriendsSection();
-  };
+  const rejectRequestMutation = useMutation({
+    mutationFn: (username: string) => rejectFriendRequest({ username }, token!),
+    onSuccess: () => {
+      refreshFriendsSection();
+    },
+    onError: (error: ErrorResponse) => {
+      alert(error.message);
+    },
+  });
 
   const invitesElement = (
     <Accordion.Item key="invites" value="invites">
@@ -307,7 +325,9 @@ const FriendsSection = () => {
                     <ActionIcon
                       color="green"
                       size="lg"
-                      onClick={() => acceptRequest(friend.username)}
+                      onClick={() =>
+                        acceptRequestMutation.mutate(friend.username)
+                      }
                     >
                       <IconUserCheck />
                     </ActionIcon>
@@ -316,7 +336,9 @@ const FriendsSection = () => {
                     <ActionIcon
                       color="red"
                       size="lg"
-                      onClick={() => rejectRequest(friend.username)}
+                      onClick={() =>
+                        rejectRequestMutation.mutate(friend.username)
+                      }
                     >
                       <IconUserX />
                     </ActionIcon>

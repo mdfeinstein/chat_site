@@ -5,7 +5,7 @@ import type { GetFriendDataResponse } from "../api/api";
 const useFriendsData = (token: string, refreshTime: number) => {
   const queryClient = useQueryClient();
   const query =  useQuery({
-    queryKey: ['chatsWithHistory'],
+    queryKey: ['friendsData'],
     queryFn: async () => {
       const newData = await getFriendData(token);
       return newData;
@@ -14,7 +14,7 @@ const useFriendsData = (token: string, refreshTime: number) => {
     });
   
     const invalidate = () => {
-      queryClient.invalidateQueries({ queryKey: ['chatsWithHistory'] });
+      queryClient.invalidateQueries({ queryKey: ['friendsData'] });
     };
 
     return {...query, refetch: query.refetch, invalidate};
