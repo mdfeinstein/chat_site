@@ -117,7 +117,7 @@ const ChatPage: React.FC<ChatPageProps> = ({}) => {
 
         {/* MessagesContainer - 70% height */}
         <Box
-          // bg="linear-gradient(#f4adad, #befbff)"
+          bg="linear-gradient(#f4adad, #befbff)"
           style={{
             height: "80vh",
             width: "100%",

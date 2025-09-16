@@ -1,10 +1,5 @@
 import { useState } from "react";
-import {
-  SegmentedControl,
-  Box,
-  NavLink,
-  Stack,
-} from "@mantine/core";
+import { SegmentedControl, Box, NavLink, Stack } from "@mantine/core";
 import FriendsSection from "./FriendsSection";
 import ChatsSection from "./ChatsSection";
 import { IconArrowLeft, IconArrowRight } from "@tabler/icons-react";
@@ -28,7 +23,7 @@ const ArrowedMarginTab: React.FC<{
         // top: "50%",
         width: "40px",
         height: "100%",
-        backgroundColor: hovered? "#ffbbbbff": "#ffe9e9ff",
+        backgroundColor: hovered ? "#ffbbbbff" : "#ffe9e9ff",
         zIndex: 1,
         display: "flex",
         flexDirection: "column",
@@ -55,10 +50,7 @@ const CollapsibleNavBar = ({
   setChatDetailsFunc: (chatId: number) => void;
   selectedChatId: number;
 }) => {
-
-
   const [section, setSection] = useState<"Chats" | "Friends">("Chats");
-
 
   const chatsElement = (
     <ChatsSection
@@ -68,9 +60,11 @@ const CollapsibleNavBar = ({
   );
   const friendsElement = <FriendsSection />;
 
-
   return (
-    <Box style={{ display: "flex", flexDirection: "row" }}>
+    <Box
+      bg="linear-gradient(#f4adad, #befbff)"
+      style={{ display: "flex", flexDirection: "row" }}
+    >
       <Box
         style={{
           display: "flex",
@@ -94,11 +88,13 @@ const CollapsibleNavBar = ({
           />
         </Box>
 
-        <Box style={{
-          flex: 1,             // Take available space
-          minHeight: 0,        // Allow shrinking below content size
-          overflow: 'hidden'   // Contain the scroll area
-        }}>
+        <Box
+          style={{
+            flex: 1, // Take available space
+            minHeight: 0, // Allow shrinking below content size
+            overflow: "hidden", // Contain the scroll area
+          }}
+        >
           {section === "Chats" ? chatsElement : friendsElement}
         </Box>
       </Box>
