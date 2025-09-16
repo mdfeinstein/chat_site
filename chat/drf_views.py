@@ -31,6 +31,8 @@ from django.db.models import Q, Max
 from django.db.models.functions import Lower
 import json
 from drf_spectacular.utils import extend_schema, OpenApiParameter
+from channels.layers import get_channel_layer
+from asgiref.sync import async_to_sync
 
 # obtain_auth_token = ObtainAuthToken.as_view()
 
@@ -521,6 +523,21 @@ def send_message(request, chat_id):
         message_number=message_count,
     )
     message.save()
+    message_data = MessageSerializer(message).data
+
+    # --- Publish to Channels group ---
+    channel_layer = get_channel_layer()
+    group_name = (
+        f"chat_{chat_id}"  # should match the consumer's group name
+    )
+
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+            "type": "chat_message",  # maps to consumer method
+            "message": message_data,
+        },
+    )
 
     return Response(
         {"success": True, "message": "Message sent successfully"}
