@@ -12,7 +12,7 @@ import {
   Box,
   Chip,
   useMantineTheme,
-  Flex
+  Flex,
 } from "@mantine/core";
 import { use, useEffect, useState, useRef } from "react";
 import React from "react";
@@ -26,9 +26,13 @@ import {
 } from "@tabler/icons-react";
 
 import { getFriendData } from "../api/api";
-import type { GetFriendDataResponse, ChatUserMinimal, ChatUsersMinimal, 
-  SuccessResponse, ErrorResponse
- } from "../api/api";
+import type {
+  GetFriendDataResponse,
+  ChatUserMinimal,
+  ChatUsersMinimal,
+  SuccessResponse,
+  ErrorResponse,
+} from "../api/api";
 import {
   sendFriendRequest,
   cancelFriendRequest,
@@ -38,67 +42,43 @@ import {
   getRequestableUsers,
 } from "../api/api";
 import { useChatPageContext } from "./ChatPageContext";
-
+import useFriendsData from "./useFriendsData";
+import useRequestableUsers from "./useRequestableUsers";
 
 const FriendsSection = () => {
   const theme = useMantineTheme();
   const { token } = useChatPageContext();
-
-  const [requestableUsers, setRequestableUsers] = useState<
-    ChatUsersMinimal
-  >({usernames: []});
-  const [friendData, setFriendData] = useState<GetFriendDataResponse>({
-    online_friends: [],
-    offline_friends: [],
-    requested_users: [],
-    invited_by: [],
-  });
-
-  const updateFriendData = async () => {
-    const data = await getFriendData(token!);
-    setFriendData(data);
-  };
-
-  const updateRequestableUsers = async () => {
-    const data = await getRequestableUsers(token!);
-    setRequestableUsers(data);
-  };
+  const { data: friendsData, refetch: refetchFriendsData } = useFriendsData(
+    token!,
+    2000
+  );
+  const { data: requestableUsers, refetch: refetchRequestableUsers } =
+    useRequestableUsers(token!, 2000);
 
   const refreshFriendsSection = async () => {
-    await updateRequestableUsers();
-    await updateFriendData();
+    refetchRequestableUsers();
+    refetchFriendsData();
   };
-
-  useEffect(() => {
-    refreshFriendsSection();
-    const interval = setInterval(() => {
-    refreshFriendsSection();
-  }, 2000);
-
-  return () => clearInterval(interval); // cleanup on unmount
-  
-  }, []);
-
 
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
   const addNewChatClicked = async () => {
     let response: SuccessResponse | ErrorResponse;
-    if (selectedFriends.length === 0) { //display error?
-      response = {success: false, message: "No users selected. Not sent to server."};
-    }
-    else {
-      response = await createChat({usernames: selectedFriends}, token!);
+    if (selectedFriends.length === 0) {
+      //display error?
+      response = {
+        success: false,
+        message: "No users selected. Not sent to server.",
+      };
+    } else {
+      response = await createChat({ usernames: selectedFriends }, token!);
     }
     if (response.success) {
       setSelectedFriends([]);
-      // do we want to also switch to new chat? will need to pass setChatId to this component as prop if so. or get it from context, which is probaly reasonable. 
-    }
-    else {
+      // do we want to also switch to new chat? will need to pass setChatId to this component as prop if so. or get it from context, which is probaly reasonable.
+    } else {
       alert(response.message);
     }
   };
-
-
 
   const friendsElement = (
     <Accordion.Item key="friends" value="friends">
@@ -115,8 +95,9 @@ const FriendsSection = () => {
               value={selectedFriends}
               onChange={setSelectedFriends}
             >
-              {friendData.online_friends.map((friend) => (
+              {friendsData?.online_friends?.map((friend) => (
                 <Box
+                  key={friend.id}
                   style={{
                     display: "flex",
                     flexDirection: "row",
@@ -137,8 +118,9 @@ const FriendsSection = () => {
                   </Chip>
                 </Box>
               ))}
-              {friendData.offline_friends.map((friend) => (
+              {friendsData?.offline_friends?.map((friend) => (
                 <Box
+                  key={friend.id}
                   style={{
                     display: "flex",
                     flexDirection: "row",
@@ -165,8 +147,7 @@ const FriendsSection = () => {
           leftSection={<IconMessageCirclePlus />}
           onClick={() => {
             addNewChatClicked();
-          }
-        }
+          }}
         >
           Create Chat
         </Button>
@@ -186,10 +167,7 @@ const FriendsSection = () => {
     await refreshFriendsSection();
   };
 
-
-  const [selectedUser, setSelectedUser] = useState<string | null>(
-    null
-  );
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
 
   const [sendRequestMenuOpened, setSendRequestMenuOpened] =
     useState<boolean>(false);
@@ -198,7 +176,7 @@ const FriendsSection = () => {
     <Accordion.Item key="requests" value="requests">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Requests ({friendData.requested_users.length})
+          Requests ({friendsData?.requested_users?.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
@@ -215,13 +193,13 @@ const FriendsSection = () => {
         >
           <Select
             placeholder="Select User"
-            data={requestableUsers.usernames}
+            data={requestableUsers?.usernames}
             value={selectedUser ?? null}
             defaultValue={null}
             searchable
             onChange={(value) =>
               setSelectedUser(
-                requestableUsers.usernames.find(
+                requestableUsers?.usernames?.find(
                   (username) => username === value!
                 ) || null
               )
@@ -244,50 +222,41 @@ const FriendsSection = () => {
             </ActionIcon>
           </Tooltip>
         </Box>
-        <Box
-        
-        bd={'2px solid '+theme.colors.gray[2]}
-        bdrs={10}
-        >
-        <ScrollArea 
-        h={400}
-        p={2}
-        >
-          <Stack
-          gap="xs"
-          >
-            {friendData.requested_users.map((friend) => (
-              <Paper
-                key={friend.username}
-                shadow="xl"
-                p="xs"
-                withBorder
-                radius="lg"
-                style={{
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text fw={700} fz="md" c="red.8" mb="0.5rem">
-                  {friend.username}
-                </Text>
-                <Tooltip label="Cancel Request" position="bottom" withArrow>
-                  <ActionIcon
-                    color="red"
-                    size="md"
-                    onClick={(e) => {
-                      cancelRequest(friend.username);
-                    }}
-                  >
-                    <IconXboxXFilled />
-                  </ActionIcon>
-                </Tooltip>
-              </Paper>
-            ))}
-          </Stack>
-        </ScrollArea>
+        <Box bd={"2px solid " + theme.colors.gray[2]} bdrs={10}>
+          <ScrollArea h={400} p={2}>
+            <Stack gap="xs">
+              {friendsData?.requested_users?.map((friend) => (
+                <Paper
+                  key={friend.id}
+                  shadow="xl"
+                  p="xs"
+                  withBorder
+                  radius="lg"
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text fw={700} fz="md" c="red.8" mb="0.5rem">
+                    {friend.username}
+                  </Text>
+                  <Tooltip label="Cancel Request" position="bottom" withArrow>
+                    <ActionIcon
+                      color="red"
+                      size="md"
+                      onClick={(e) => {
+                        cancelRequest(friend.username);
+                      }}
+                    >
+                      <IconXboxXFilled />
+                    </ActionIcon>
+                  </Tooltip>
+                </Paper>
+              ))}
+            </Stack>
+          </ScrollArea>
         </Box>
       </Accordion.Panel>
     </Accordion.Item>
@@ -309,15 +278,15 @@ const FriendsSection = () => {
     <Accordion.Item key="invites" value="invites">
       <Accordion.Control>
         <Text fw={700} fz="lg" mb="0.5rem" ml="0.5rem">
-          Invites ({friendData.invited_by.length})
+          Invites ({friendsData?.invited_by?.length})
         </Text>
       </Accordion.Control>
       <Accordion.Panel>
         <ScrollArea h={200}>
           <Stack>
-            {friendData.invited_by.map((friend) => (
+            {friendsData?.invited_by?.map((friend) => (
               <Paper
-                key={friend.username}
+                key={friend.id}
                 shadow="xl"
                 p="md"
                 withBorder
@@ -333,29 +302,25 @@ const FriendsSection = () => {
                 <Text fw={700} fz="md" mb="0.5rem">
                   {friend.username}
                 </Text>
-                <Flex
-                  justify={'flex-end'}
-                  align={'center'}
-                  gap={"xs"}
-                >
-                <Tooltip label="Accept Invite" position="bottom" withArrow>
-                  <ActionIcon
-                    color="green"
-                    size="lg"
-                    onClick={() => acceptRequest(friend.username)}
-                  >
-                    <IconUserCheck />
-                  </ActionIcon>
-                </Tooltip>
-                <Tooltip label="Reject Invite" position="bottom" withArrow>
-                  <ActionIcon
-                    color="red"
-                    size="lg"
-                    onClick={() => rejectRequest(friend.username)}
-                  >
-                    <IconUserX />
-                  </ActionIcon>
-                </Tooltip>
+                <Flex justify={"flex-end"} align={"center"} gap={"xs"}>
+                  <Tooltip label="Accept Invite" position="bottom" withArrow>
+                    <ActionIcon
+                      color="green"
+                      size="lg"
+                      onClick={() => acceptRequest(friend.username)}
+                    >
+                      <IconUserCheck />
+                    </ActionIcon>
+                  </Tooltip>
+                  <Tooltip label="Reject Invite" position="bottom" withArrow>
+                    <ActionIcon
+                      color="red"
+                      size="lg"
+                      onClick={() => rejectRequest(friend.username)}
+                    >
+                      <IconUserX />
+                    </ActionIcon>
+                  </Tooltip>
                 </Flex>
               </Paper>
             ))}

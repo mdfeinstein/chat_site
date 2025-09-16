@@ -3,7 +3,8 @@ import { getChatData } from "../api/api";
 import type { GetChatDataResponse } from "../api/api";
 
 const useChatData = (chatId: number, token: string, refreshTime: number) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const query =  useQuery({
     queryKey: ['chatData', chatId],
     queryFn: async () => {
       const newData = await getChatData(chatId, token);
@@ -11,6 +12,12 @@ const useChatData = (chatId: number, token: string, refreshTime: number) => {
       },
       refetchInterval: refreshTime,
     });
+  
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['chatData', chatId] });
   };
+
+  return {...query, refetch: query.refetch, invalidate};
+};
 
 export default useChatData;

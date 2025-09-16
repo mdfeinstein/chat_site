@@ -4,7 +4,8 @@ import type { GetChatsWithHistoryResponse } from "../api/api";
 
 
 const useChatsWithHistory = (token: string, refreshTime: number) => {
-  return useQuery({
+  const queryClient = useQueryClient();
+  const query = useQuery({
     queryKey: ['chatsWithHistory'],
     queryFn: async () => {
       const newData = await getChatsWithHistory(token);
@@ -12,6 +13,11 @@ const useChatsWithHistory = (token: string, refreshTime: number) => {
       },
       refetchInterval: refreshTime,
     });
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['chatsWithHistory'] });
+  };
+
+  return {...query, refetch: query.refetch, invalidate};
   };
 
 export default useChatsWithHistory;

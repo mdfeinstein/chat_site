@@ -47,7 +47,7 @@ const ChatsSection = ({
       }}
     >
       <Stack>
-        {chatsData?.chats.map((chat) => (
+        {chatsData?.chats?.map((chat) => (
           <Paper
             onMouseEnter={() => setHoveredChatId(chat.chat_id)}
             onMouseLeave={() => setHoveredChatId(null)}

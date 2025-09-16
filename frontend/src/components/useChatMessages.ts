@@ -10,7 +10,7 @@ interface ChatMessagesData {
 
 const useChatMessages = (chatId: number, token: string, refreshTime: number) => {
   const queryClient = useQueryClient();
-  return useQuery({
+  const query = useQuery({
     queryKey: ['messages', chatId],
     queryFn: async () => {
       const cached = queryClient.getQueryData<ChatMessagesData>(['messages', chatId]);
@@ -29,6 +29,11 @@ const useChatMessages = (chatId: number, token: string, refreshTime: number) => 
       },
       refetchInterval: refreshTime,
     });
+    const invalidate = () => {
+      queryClient.invalidateQueries({ queryKey: ['messages', chatId] });
+    };
+
+    return {...query, refetch: query.refetch, invalidate};
   };
 
 export default useChatMessages;
