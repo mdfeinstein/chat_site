@@ -83,21 +83,20 @@ def chat(request):
 
 
 def chat_page(request):
-    # default to chat with most recent message
-    chat_user = ChatUser.objects.get(user=request.user)
-    most_recent_message = (
-        Message.objects.filter(chat__users=chat_user)
-        .order_by("-createdAt")
-        .first()
-    )
-    if most_recent_message:
-        chat_pk = most_recent_message.chat.pk
-    else:
-        chat_pk = -1
+    # # default to chat with most recent message
+    # chat_user = ChatUser.objects.get(user=request.user)
+    # most_recent_message = (
+    #     Message.objects.filter(chat__users=chat_user)
+    #     .order_by("-createdAt")
+    #     .first()
+    # )
+    # if most_recent_message:
+    #     chat_pk = most_recent_message.chat.pk
+    # else:
+    #     chat_pk = -1
     return render(
         request,
         "chat.html",
-        {"chat_pk": chat_pk},
     )
 
 

@@ -42,7 +42,7 @@ const MessageContainer: React.FC<MessageProps> = ({ sender, createdAt, text,  is
       mb="0rem"
       style={{
         borderWidth: "6px",
-        backgroundColor: highlight? "#ffa6a6ff" : undefined, //highlight ? '#ffff00ff' : #ffccccff : undefined,  // Yellow background for new messages
+        backgroundColor: highlight? "#ffa6a6ff" : undefined, 
         transition: 'background-color 7s ease',  // Smooth transition back to normal
       }}
 

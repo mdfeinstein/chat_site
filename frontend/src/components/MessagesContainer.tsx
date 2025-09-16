@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from "react";
+import React, { useState, useEffect, useRef, useContext, memo } from "react";
 import { Stack, Box, ScrollArea } from "@mantine/core";
 import MessageContainer from "./MessageContainer";
 import { ScrollToBottomButton } from "./ScrollToBottomButton";
@@ -13,23 +13,10 @@ export interface Message {
 }
 
 interface MessagesContainerProps {
-  initialMessages: Message[];
-  initialMessagesLoaded: boolean;
   chatId: number;
 }
 
-const MessagesContainer: React.FC<MessagesContainerProps> = ({
-  initialMessages,
-  initialMessagesLoaded,
-  chatId,
-}) => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
-  // console.log("last initial message: ", initialMessages[initialMessages.length - 1]);
-  const [lastMessageNumber, setLastMessageNumber] = useState<number>(
-    initialMessages.length > 0
-      ? initialMessages[initialMessages.length - 1].message.message_number
-      : 0
-  );
+const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
   const [scrolledToBottom, setScrolledToBottom] = useState<boolean>(true);
 
   // Get the user info from the context
@@ -39,6 +26,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
     isLoading: messageQueryLoading,
     isError: messageQueryError,
   } = useChatMessages(chatId, token!, 250);
+
 
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -59,6 +47,11 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   };
+
+  useEffect(() => {
+    if (!messageQueryData) return;
+    scrollToBottomInstant();
+  }, [chatId, messageQueryData?.lastMessageNumber]);
 
   return (
     <ScrollArea
@@ -84,7 +77,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
       style={{
         padding: "0rem",
         margin: "0 auto",
-        cursor: initialMessagesLoaded ? "default" : "wait",
+        // cursor: initialMessagesLoaded ? "default" : "wait",
       }}
     >
       <Stack gap="0.8rem">
@@ -95,7 +88,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({
             createdAt={message.createdAt}
             text={message.text}
             messageNumber={message.message_number}
-            // isNew={message.isNew}
+            isNew={
+              messageQueryData?.prevLastMessageNumber !== -1 &&
+              message.message_number > messageQueryData?.prevLastMessageNumber
+            }
           />
         ))}
       </Stack>

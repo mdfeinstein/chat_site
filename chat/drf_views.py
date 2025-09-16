@@ -85,9 +85,7 @@ def get_chat_data(request, chat_id=None):
             },
             status=status.HTTP_404_NOT_FOUND,
         )
-    # get and order messages
-    messages = chat.messages.order_by("message_number")
-    serializer = ChatDataSerializer.from_chat(chat, messages)
+    serializer = ChatDataSerializer.from_chat(chat)
     return Response(serializer.data)
 
 

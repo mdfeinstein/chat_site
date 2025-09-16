@@ -5,6 +5,7 @@ import type { MessageResponse } from "../api/api";
 interface ChatMessagesData {
   messages: MessageResponse[];
   lastMessageNumber: number;
+  prevLastMessageNumber: number;
 }
 
 const useChatMessages = (chatId: number, token: string, refreshTime: number) => {
@@ -21,6 +22,7 @@ const useChatMessages = (chatId: number, token: string, refreshTime: number) => 
         return {
           messages: merged,
           lastMessageNumber: merged[merged.length - 1]?.message_number ?? -1,
+          prevLastMessageNumber: lastMessageNumber,
         };
       });
       return queryClient.getQueryData<ChatMessagesData>(['messages', chatId]);

@@ -316,7 +316,6 @@ export interface components {
             chat_id: number;
             chat_usernames: string[];
             exited_chat_usernames: string[];
-            messages: components["schemas"]["Message"][];
         };
         ChatUser: {
             readonly id: number;

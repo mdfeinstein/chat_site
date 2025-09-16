@@ -9,6 +9,8 @@ import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
 import { getChatData, getUserInfo, getChatsWithHistory } from "../api/api";
 import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
+import useChatsWithHistory from "./useChatsWithHistory";
+
 
 interface ChatPageProps {
 }
@@ -17,53 +19,42 @@ interface ChatPageProps {
 const ChatPage: React.FC<ChatPageProps> = ({
 }) => {
   const { token, chatUser} = useChatPageContext();
-  // const [userInfo, setUserInfo] = useState<ChatUserResponse>({} as ChatUserResponse);
+  const { data: chatsData, isLoading: chatsLoading, isError: chatsError } = useChatsWithHistory(token!, 4000);
   const [chatId, setChatId] = useState<number>(-1);
-  const [chatData, setChatData] = useState<GetChatDataResponse>({
-    chat_id:-1,
-    chat_usernames: [],
-    exited_chat_usernames: [],
-    messages: [],
-  } as GetChatDataResponse);
+  const [initialized, setInitialized] = useState<boolean>(false);
   
   const [isNavBarCollapsed, setIsNavBarCollapsed] = useState<boolean>(true);
-  const [initialMessages, setInitialMessages] = useState<Message[]>([]);
-  const [initialMessagesLoaded, setInitialMessagesLoaded] = useState<boolean>(false);
   const toggleNavBar = () => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
 
-  const updateChatData = async () => {
-    setInitialMessagesLoaded(false);
-    if (chatId!==-1) {
-      const data = await getChatData(chatId, token!);
-      setChatData(data);
-      setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
-      setInitialMessagesLoaded(true);
-    }
-    else {
-      // setChatName("No Chats Found. Start One in the Friends Tab!");
-    }
-  };
+  // const updateChatData = async () => {
+  //   setInitialMessagesLoaded(false);
+  //   if (chatId!==-1) {
+  //     const data = await getChatData(chatId, token!);
+  //     setChatData(data);
+  //     setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
+  //     setInitialMessagesLoaded(true);
+  //   }
+  //   else {
+  //     // setChatName("No Chats Found. Start One in the Friends Tab!");
+  //   }
+  // };
 
-  const getChatsAndSetChatId = async () => {
-    const chats_data = await getChatsWithHistory(token!);
-    if (chats_data.chats.length > 0) {
-      setChatId(chats_data.chats[0].chat_id);
-    }
-  };
 
   const setChatDetailsFunc = (chatId: number) => {
     setChatId(chatId);
   };
 
-  useEffect(() => {
-    updateChatData();
-  }, [chatId]);
+  // useEffect(() => {
+  //   updateChatData();
+  // }, [chatId]);
 
   useEffect(() => {
-    getChatsAndSetChatId();
-  }, []);
+    if (initialized || !chatsData || chatsData.chats.length === 0) return;
+    setChatId(chatsData.chats[0].chat_id);
+    setInitialized(true);
+  }, [chatsData, initialized, setChatId]);
 
   // useEffect(() => {
   //   updateUserInfo();
@@ -84,7 +75,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
         overflow: "hidden",
         margin: 0,
         padding: 0,
-        cursor: initialMessagesLoaded ? "default" : "wait",
+        // cursor: initialMessagesLoaded ? "default" : "wait",
       }}
     >
       <Box
@@ -125,7 +116,7 @@ const ChatPage: React.FC<ChatPageProps> = ({
           }}
         >
           <TopBar
-            chatData={chatData}
+            chatId={chatId}
             setChatDetailsFunc={setChatDetailsFunc}
           />
         </Box>
@@ -140,8 +131,6 @@ const ChatPage: React.FC<ChatPageProps> = ({
           }}
         >
           <MessagesContainer
-            initialMessages={initialMessages}
-            initialMessagesLoaded={initialMessagesLoaded}
             chatId={chatId}
           />
         </Box>

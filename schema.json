@@ -674,15 +674,10 @@ components:
           type: array
           items:
             type: string
-        messages:
-          type: array
-          items:
-            $ref: '#/components/schemas/Message'
       required:
       - chat_id
       - chat_usernames
       - exited_chat_usernames
-      - messages
     ChatUser:
       type: object
       properties:
