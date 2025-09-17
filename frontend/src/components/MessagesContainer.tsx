@@ -1,4 +1,11 @@
-import React, { useState, useEffect, useRef, useContext, memo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useContext,
+  memo,
+  use,
+} from "react";
 import { Stack, Box, ScrollArea } from "@mantine/core";
 import MessageContainer from "./MessageContainer";
 import { ScrollToBottomButton } from "./ScrollToBottomButton";
@@ -26,16 +33,18 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
     data: messageQueryData,
     isLoading: messageQueryLoading,
     isError: messageQueryError,
-  } = useChatMessages(chatId, token!, 250);
+    ingestMessages,
+  } = useChatMessages(chatId, token!, 0);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { messages, sendMessage } = useChatSocket(chatId);
+  const { messages: socketMessages, flushMessages } = useChatSocket(chatId);
   useEffect(() => {
-    messages.forEach((message) => {
-      console.log(message);
-    });
-  }, [messages]);
+    if (messageQueryData && socketMessages && socketMessages.length > 0) {
+      const messages = flushMessages();
+      ingestMessages(messages);
+    }
+  }, [socketMessages]);
 
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {

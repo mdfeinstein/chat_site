@@ -34,7 +34,19 @@ const useChatMessages = (chatId: number, token: string, refreshTime: number) => 
       queryClient.invalidateQueries({ queryKey: ['messages', chatId] });
     };
 
-    return {...query, refetch: query.refetch, invalidate};
+    const ingestMessages = (messages: MessageResponse[]) => {
+      queryClient.setQueryData(['messages', chatId], (old : {lastMessageNumber: number, messages: MessageResponse[]} | undefined) => {
+        const oldMessages = old?.messages ?? [];
+        const merged = [...oldMessages, ...messages];
+        return {
+          messages: merged,
+          lastMessageNumber: messages[messages.length - 1]?.message_number ?? -1,
+          prevLastMessageNumber: old?.lastMessageNumber ?? -1,
+        };
+      });
+    };
+
+    return {...query, refetch: query.refetch, invalidate, ingestMessages};
   };
 
 export default useChatMessages;

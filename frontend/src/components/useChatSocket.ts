@@ -1,16 +1,8 @@
 import { useEffect, useRef, useState } from "react";
-
-interface ChatMessage {
-  id: number;
-  sender_username: string;
-  text: string;
-  message_number: number;
-  created_at: string;
-}
+import type { MessageResponse } from "../api/api";
 
 const useChatSocket = (chatId: number) => {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  // Type the ref as WebSocket | null
+  const [messages, setMessages] = useState<MessageResponse[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -50,7 +42,14 @@ const useChatSocket = (chatId: number) => {
     }
   };
 
-  return { messages, sendMessage };
+  const flushMessages = () => {
+    // return messages and clear the array
+    const messagesToFlush = messages;
+    setMessages([]);
+    return messagesToFlush;
+  };
+
+  return { messages, sendMessage, flushMessages };
 }
 
 export default useChatSocket;
