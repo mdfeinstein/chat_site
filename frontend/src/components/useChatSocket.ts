@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { MessageResponse } from "../api/api";
 
-const useChatSocket = (chatId: number) => {
+const useChatSocket = (chatId: number, token :string) => {
   const [messages, setMessages] = useState<MessageResponse[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
     const wsUrl = `${wsProtocol}://${window.location.host}/ws/chat/${chatId}/`;
-    const socket = new WebSocket(wsUrl);
+    const socket = new WebSocket(wsUrl, ["access_token", token]);
     socketRef.current = socket;
 
     socket.onopen = () => {

@@ -33,6 +33,7 @@ import json
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
+import logging
 
 # obtain_auth_token = ObtainAuthToken.as_view()
 

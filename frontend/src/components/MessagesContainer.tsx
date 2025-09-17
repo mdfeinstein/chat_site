@@ -38,7 +38,10 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const { messages: socketMessages, flushMessages } = useChatSocket(chatId);
+  const { messages: socketMessages, flushMessages } = useChatSocket(
+    chatId,
+    token!
+  );
   useEffect(() => {
     if (messageQueryData && socketMessages && socketMessages.length > 0) {
       const messages = flushMessages();

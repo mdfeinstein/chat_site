@@ -16,6 +16,8 @@ const useChatsWithHistory = (token: string, refreshTime: number) => {
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ['chatsWithHistory'] });
   };
+  
+  // const ingestNewMessages 
 
   return {...query, refetch: query.refetch, invalidate};
   };
