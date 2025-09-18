@@ -60,6 +60,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @staticmethod
     @database_sync_to_async
     def validate_request(user, chat_id):
+        """Validates that chat exists and user is in chat"""
         try:
             chat_user = ChatUser.objects.get(user=user)
         except ChatUser.DoesNotExist:

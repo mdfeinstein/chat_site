@@ -45,6 +45,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
   useEffect(() => {
     if (messageQueryData && socketMessages && socketMessages.length > 0) {
       const messages = flushMessages();
+      console.log("from messages container: ", messages);
       ingestMessages(messages);
     }
   }, [socketMessages]);

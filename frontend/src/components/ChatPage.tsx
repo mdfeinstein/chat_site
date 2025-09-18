@@ -3,12 +3,9 @@ import { useState, useEffect, createContext, useContext } from "react";
 import { ChatPageContextProvider, useChatPageContext } from "./ChatPageContext";
 import { Box, Burger } from "@mantine/core";
 import MessagesContainer from "./MessagesContainer";
-import type { Message } from "./MessagesContainer";
 import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
-import { getChatData, getUserInfo, getChatsWithHistory } from "../api/api";
-import type { GetChatDataResponse, ChatUserResponse } from "../api/api";
 import useChatsWithHistory from "./useChatsWithHistory";
 
 interface ChatPageProps {}
@@ -19,7 +16,7 @@ const ChatPage: React.FC<ChatPageProps> = ({}) => {
     data: chatsData,
     isLoading: chatsLoading,
     isError: chatsError,
-  } = useChatsWithHistory(token!, 4000);
+  } = useChatsWithHistory(token!, 0);
   const [chatId, setChatId] = useState<number>(-1);
   const [initialized, setInitialized] = useState<boolean>(false);
 
@@ -28,26 +25,9 @@ const ChatPage: React.FC<ChatPageProps> = ({}) => {
     setIsNavBarCollapsed(!isNavBarCollapsed);
   };
 
-  // const updateChatData = async () => {
-  //   setInitialMessagesLoaded(false);
-  //   if (chatId!==-1) {
-  //     const data = await getChatData(chatId, token!);
-  //     setChatData(data);
-  //     setInitialMessages(data.messages.map((message) => ({message: message, isNew: false})));
-  //     setInitialMessagesLoaded(true);
-  //   }
-  //   else {
-  //     // setChatName("No Chats Found. Start One in the Friends Tab!");
-  //   }
-  // };
-
   const setChatDetailsFunc = (chatId: number) => {
     setChatId(chatId);
   };
-
-  // useEffect(() => {
-  //   updateChatData();
-  // }, [chatId]);
 
   useEffect(() => {
     if (initialized || !chatsData || chatsData.chats.length === 0) return;

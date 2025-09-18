@@ -13,6 +13,8 @@ import {
 import { IconSend2 } from "@tabler/icons-react";
 import useChatMessages from "./useChatMessages";
 import { useMutation } from "@tanstack/react-query";
+import useChatSocket from "./useChatSocket";
+import { send } from "process";
 
 interface SendMessageFormProps {
   chatId: number;
@@ -22,17 +24,32 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
   const { token } = useChatPageContext();
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  // const { sendMessage: sendMessageChannel } = useChatSocket(chatId, token!);
   const { invalidate: invalidateMessages } = useChatMessages(chatId, token!, 0);
   const sendMessageMutation = useMutation({
     mutationFn: (data: NewMessageRequest) => sendMessage(data, chatId, token!),
     onSuccess: () => {
       setMessage("");
-      invalidateMessages();
+      // invalidateMessages();
     },
     onError: (e) => {
       setError(e.message);
     },
   });
+
+  const sendFunction = () => {
+    if (!message.trim()) {
+      return;
+    }
+    const data: NewMessageRequest = {
+      text: message,
+    };
+    console.log("about to mutate...");
+    sendMessageMutation.mutate({
+      text: message,
+    });
+    // sendMessageChannel(message);
+  };
 
   return (
     <Box
@@ -51,20 +68,10 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
         onChange={(e) => setMessage(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter" && !e.shiftKey) {
+            console.log("Enter pressed");
             e.preventDefault();
-            if (!message.trim()) {
-              return;
-            }
-            const data: NewMessageRequest = {
-              text: message,
-            };
-            sendMessage(data, chatId, token!).then((response) => {
-              if (response.success) {
-                setMessage("");
-              } else {
-                setError(response.message);
-              }
-            });
+            console.log("about send...");
+            sendFunction();
           }
         }}
         required
@@ -90,14 +97,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
             width: "10%",
             height: "90%",
           }}
-          onClick={async () => {
-            if (!message.trim()) {
-              return;
-            }
-            sendMessageMutation.mutate({
-              text: message,
-            });
-          }}
+          onClick={sendFunction}
           disabled={!message.trim()}
         >
           <IconSend2

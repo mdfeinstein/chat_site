@@ -8,6 +8,8 @@ import type {
 import { getChatsWithHistory } from "../api/api";
 import { useChatPageContext } from "./ChatPageContext";
 import useChatsWithHistory from "./useChatsWithHistory";
+import useChatSocket from "./useChatSocket";
+import ChatStub from "./ChatStub";
 
 const formatDate = (createdAt: string) => {
   // Format the date if needed
@@ -33,7 +35,7 @@ const ChatsSection = ({
 }: ChatsSectionProps) => {
   const [hoveredChatId, setHoveredChatId] = useState<number | null>(null);
   const { token } = useChatPageContext();
-  const { data: chatsData } = useChatsWithHistory(token!, 4000);
+  const { data: chatsData } = useChatsWithHistory(token!, 0);
 
   return (
     <ScrollArea
@@ -48,44 +50,12 @@ const ChatsSection = ({
     >
       <Stack>
         {chatsData?.chats?.map((chat) => (
-          <Paper
-            onMouseEnter={() => setHoveredChatId(chat.chat_id)}
-            onMouseLeave={() => setHoveredChatId(null)}
-            onClick={setChatDetailsFunc.bind(null, chat.chat_id)}
+          <ChatStub
             key={chat.chat_id}
-            shadow="xl"
-            p="md"
-            withBorder
-            radius="lg"
-            mb="0rem"
-            style={{
-              cursor: "pointer",
-              backgroundColor:
-                chat.chat_id === selectedChatId
-                  ? "#f4adadff"
-                  : hoveredChatId === chat.chat_id
-                  ? "#fff2f2"
-                  : "#ffffff",
-            }}
-          >
-            <Text fw={700} fz="lg" c="red.8" mb="0.5rem">
-              {chat.chat_name}
-            </Text>
-            <ScrollArea h={100}>
-              {chat.last_messages.map((msg) => {
-                return (
-                  <Box key={`${chat.chat_id}: ${msg.message_number}`}>
-                    <Text fz="sm" c="dimmed">
-                      {msg.sender} • {formatDate(msg.createdAt)}
-                    </Text>
-                    <Text fz="md" c="dimmed">
-                      {msg.text}
-                    </Text>
-                  </Box>
-                );
-              })}
-            </ScrollArea>
-          </Paper>
+            chat={chat}
+            setChatDetailsFunc={setChatDetailsFunc}
+            selectedChatId={selectedChatId}
+          />
         ))}
       </Stack>
     </ScrollArea>

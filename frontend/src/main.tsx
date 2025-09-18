@@ -11,9 +11,9 @@ const mountChatPage = () => {
     const root = createRoot(chatPage);
     root.render(
       <MantineProvider theme={mantineTheme}>
-        <StrictMode>
-          <AuthGate />
-        </StrictMode>
+        {/* <StrictMode> */}
+        <AuthGate />
+        {/* </StrictMode> */}
       </MantineProvider>
     );
   }
