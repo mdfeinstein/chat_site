@@ -71,3 +71,58 @@ class ChatConsumer(AsyncWebsocketConsumer):
             return False
         # finally, check that user is in chat
         return chat.users.filter(pk=chat_user.pk).exists()
+
+
+class UserConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        user = self.scope.get("user")
+        print(f"user: {user}")
+        if user is None or user.is_anonymous:
+            await self.close()
+            return
+
+        self.room_group_name = f"user_{user.pk}"
+        print(f"attempting to join group {self.room_group_name}")
+        # Join group
+        await self.channel_layer.group_add(
+            self.room_group_name, self.channel_name
+        )
+        print("joined, about to accept...")
+        protocols = self.scope.get("subprotocols", [])
+        protocol = protocols[0] if protocols else None
+        print(f"protocol: {protocols}")
+        # echo back protocol to client to complete handshake
+        await self.accept(
+            subprotocol=protocol
+        )  # Accept the WebSocket connection
+        print("accepted")
+
+    async def disconnect(self, close_code):
+        # Leave group
+
+        print(f"closed. Code: {close_code}")
+        await self.channel_layer.group_discard(
+            self.room_group_name, self.channel_name
+        )
+
+    async def chat_message(self, event):
+        """Receive message from group"""
+        # Send message to WebSocket client
+        print(f"message received: {event['payload']}")
+        await self.send(
+            text_data=json.dumps(
+                {"type": event["type"], "payload": event["payload"]}
+            )
+        )
+
+    async def received_friend_request(self, event):
+        """recieved new friend request"""
+        print(f"received_friend_request: {event}")
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "type": event["type"],
+                    "payload": event["payload"],
+                }
+            )
+        )

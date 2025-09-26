@@ -53,12 +53,9 @@ const FriendsSection = () => {
   const { token } = useChatPageContext();
   const { data: friendsData, refetch: refetchFriendsData } = useFriendsData(
     token!,
-    2000
+    0
   );
-  const { refetch: refetchChatsWithHistory } = useChatsWithHistory(
-    token!,
-    60 * 60 * 1000
-  );
+  const { refetch: refetchChatsWithHistory } = useChatsWithHistory(token!, 0);
   const { data: requestableUsers, refetch: refetchRequestableUsers } =
     useRequestableUsers(token!, 2000);
 

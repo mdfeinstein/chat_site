@@ -31,25 +31,25 @@ const ChatStub: React.FC<ChatStubProps> = ({
 }) => {
   const [isHovered, setIsHovered] = useState<boolean>(false);
   const { token } = useChatPageContext();
-  const { messages: socketMessages, flushMessages } = useChatSocket(
-    chat.chat_id,
-    token!
-  );
-  const { ingestNewMessagesToChat } = useChatsWithHistory(token!, 0);
+  // const { messages: socketMessages, flushMessages } = useChatSocket(
+  //   chat.chat_id,
+  //   token!
+  // );
+  // const { ingestNewMessagesToChat } = useChatsWithHistory(token!, 0);
   const [newMessageCount, setNewMessageCount] = useState<number>(0);
 
-  useEffect(() => {
-    if (socketMessages && socketMessages.length > 0) {
-      const messages = flushMessages();
-      console.log(messages);
-      // chat.last_messages = [...messages, ...chat.last_messages];
-      ingestNewMessagesToChat(messages, chat.chat_id);
-      if (selectedChatId !== chat.chat_id) {
-        setNewMessageCount((oldCount) => oldCount + messages.length);
-      }
-      console.log("done updating");
-    }
-  }, [socketMessages]);
+  // useEffect(() => {
+  //   if (socketMessages && socketMessages.length > 0) {
+  //     const messages = flushMessages();
+  //     console.log(messages);
+  //     // chat.last_messages = [...messages, ...chat.last_messages];
+  //     ingestNewMessagesToChat(messages, chat.chat_id);
+  //     if (selectedChatId !== chat.chat_id) {
+  //       setNewMessageCount((oldCount) => oldCount + messages.length);
+  //     }
+  //     console.log("done updating");
+  //   }
+  // }, [socketMessages]);
 
   const onSelectChat = () => {
     setChatDetailsFunc(chat.chat_id);

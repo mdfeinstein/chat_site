@@ -75,6 +75,13 @@ class MessageSerializer(serializers.ModelSerializer):
         ]
 
 
+class MessageByChatSerializer(serializers.Serializer):
+    """used to send or load message to a specific chat"""
+
+    chat_id = serializers.IntegerField()
+    message = MessageSerializer()
+
+
 class NewMessageSerializer(serializers.Serializer):
     text = serializers.CharField()
 
@@ -153,3 +160,20 @@ class FriendDataSerializer(serializers.Serializer):
     offline_friends = ChatUserSerializer(many=True)
     requested_users = ChatUserSerializer(many=True)
     invited_by = ChatUserSerializer(many=True)
+
+    @classmethod
+    def from_friendlist(cls, friends_list):
+        online_friends = friends_list.friends.filter(loggedIn=True)
+        offline_friends = friends_list.friends.filter(loggedIn=False)
+        requested_users = friends_list.requested_users.all()
+        invited_by = ChatUser.objects.filter(
+            friends_list__requested_users=friends_list.owner
+        )
+        return cls(
+            {
+                "online_friends": online_friends,
+                "offline_friends": offline_friends,
+                "requested_users": requested_users,
+                "invited_by": invited_by,
+            }
+        )

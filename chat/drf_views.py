@@ -9,6 +9,7 @@ from .serializers import (
     AuthTokenRequestSerializer,
     AuthTokenResponseSerializer,
     AuthErrorResponseSerializer,
+    MessageByChatSerializer,
     SuccessResponseSerializer,
     ErrorResponseSerializer,
     ChatUserSerializer,
@@ -183,6 +184,7 @@ def send_request(request):
             with transaction.atomic():
                 chat_user.friends_list.save()
                 requested_user.friends_list.save()
+
             return Response(
                 {
                     "success": True,
@@ -193,6 +195,18 @@ def send_request(request):
         else:
             chat_user.friends_list.requested_users.add(requested_user)
             chat_user.friends_list.save()
+            channel_layer = get_channel_layer()
+            print(
+                f"sending message to group user_{requested_user.user.pk}"
+            )
+            # notify requested user
+            async_to_sync(channel_layer.group_send)(
+                f"user_{requested_user.user.pk}",
+                {
+                    "type": "received_friend_request",
+                    "payload": serializer.data,
+                },
+            )
             return Response(
                 {"success": True, "message": "Request sent"},
                 status=status.HTTP_200_OK,
@@ -525,20 +539,29 @@ def send_message(request, chat_id):
     )
     message.save()
     message_data = MessageSerializer(message).data
-
+    message_by_chat_data = MessageByChatSerializer(
+        {"chat_id": chat_id, "message": message_data}
+    ).data
     # --- Publish to Channels group ---
     channel_layer = get_channel_layer()
-    group_name = (
-        f"chat_{chat_id}"  # should match the consumer's group name
-    )
-
-    async_to_sync(channel_layer.group_send)(
-        group_name,
-        {
-            "type": "chat_message",  # maps to consumer method
-            "message": message_data,
-        },
-    )
+    # send to chat (factor out when we have the UserConsumer set up)
+    # group_name = (
+    #     f"chat_{chat_id}"  # should match the consumer's group name
+    # )
+    # # async_to_sync(channel_layer.group_send)(
+    # #     group_name,
+    # #     {
+    # #         "type": "chat_message",  # maps to consumer method
+    # #         "message": message_data,
+    # #     },
+    # # )
+    chat = Chat.objects.get(pk=chat_id)
+    for chat_user in chat.users.all():
+        print(f"sending message to group user_{chat_user.user.pk}")
+        async_to_sync(channel_layer.group_send)(
+            f"user_{chat_user.user.pk}",
+            {"type": "chat_message", "payload": message_by_chat_data},
+        )
 
     return Response(
         {"success": True, "message": "Message sent successfully"}

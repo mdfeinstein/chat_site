@@ -6,4 +6,8 @@ websocket_urlpatterns = [
         r"ws/chat/(?P<chat_id>\d+)/$",
         consumers.ChatConsumer.as_asgi(),
     ),
+    re_path(
+        r"ws/user/$",
+        consumers.UserConsumer.as_asgi(),
+    ),
 ]

@@ -7,11 +7,13 @@ import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
 import useChatsWithHistory from "./useChatsWithHistory";
+import useUserSocket from "./useUserSocket";
 
 interface ChatPageProps {}
 
 const ChatPage: React.FC<ChatPageProps> = ({}) => {
   const { token, chatUser } = useChatPageContext();
+  const userSocket = useUserSocket(token!);
   const {
     data: chatsData,
     isLoading: chatsLoading,
