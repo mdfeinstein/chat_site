@@ -51,17 +51,18 @@ import { create } from "domain";
 const FriendsSection = () => {
   const theme = useMantineTheme();
   const { token } = useChatPageContext();
-  const { data: friendsData, refetch: refetchFriendsData } = useFriendsData(
+  const { data: friendsData, invalidate: invalidateFriendsData } =
+    useFriendsData(token!, 0);
+  const { invalidate: invalidateChatsWithHistory } = useChatsWithHistory(
     token!,
     0
   );
-  const { refetch: refetchChatsWithHistory } = useChatsWithHistory(token!, 0);
-  const { data: requestableUsers, refetch: refetchRequestableUsers } =
-    useRequestableUsers(token!, 2000);
+  const { data: requestableUsers, invalidate: invalidateRequestableUsers } =
+    useRequestableUsers(token!, 0);
 
   const refreshFriendsSection = async () => {
-    refetchRequestableUsers();
-    refetchFriendsData();
+    invalidateRequestableUsers();
+    invalidateFriendsData();
   };
 
   const [selectedFriends, setSelectedFriends] = useState<string[]>([]);
@@ -71,7 +72,7 @@ const FriendsSection = () => {
       await createChat({ usernames: selectedFriends }, token!),
     onSuccess: () => {
       setSelectedFriends([]);
-      refetchChatsWithHistory();
+      invalidateChatsWithHistory();
     },
     onError: (error: ErrorResponse) => {
       alert(error.message);

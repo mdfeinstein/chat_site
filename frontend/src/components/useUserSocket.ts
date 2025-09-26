@@ -4,15 +4,16 @@ import type { MessageResponse, ChatUserMinimal, GetChatsWithHistoryResponse, Get
 import type { ChatMessagesData } from "./useChatMessages";
 type MessageByChat = { chat_id: number, message: MessageResponse };
 
-type WebSocketEvent = NewMessageEvent | FriendRequestReceivedEvent;
+type WebSocketEvent = NewMessageEvent | FriendListChangedEvent;
 type NewMessageEvent = {
   type: "chat_message";
   payload: MessageByChat;
 }
-type FriendRequestReceivedEvent = {
-  type: "received_friend_request";
-  payload: ChatUserResponse;
+type FriendListChangedEvent = {
+  type: "friends_list_change";
+  payload: null;
 }
+
 type UnknownEventType = {
   type: string;
   payload: any;
@@ -62,14 +63,11 @@ const useUserSocket = (token :string) => {
               });            
             }
             break;
-          case "received_friend_request":
-            queryClient.setQueryData(['friendsData'], (old : GetFriendDataResponse) => {
-              const newInvite = data.payload;
-              console.log(newInvite);
-              old.invited_by.push(newInvite);
-              return old;
-            });
+          case "friends_list_change":
+            queryClient.invalidateQueries({queryKey: ['friendsData']});
+            queryClient.invalidateQueries({queryKey: ['requestableUsers']});
             break;
+          
           default:
             // if (typeof data.type !== "string") return;
             console.log(`Event type not recognized. JSON data: ${JSON.stringify(data)}`);

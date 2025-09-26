@@ -26,6 +26,7 @@ from .serializers import (
     ChatsWithHistorySerializer,
     FriendDataSerializer,
 )
+from .ws_notifications import notify_friends_list_change
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Max
@@ -185,6 +186,9 @@ def send_request(request):
                 chat_user.friends_list.save()
                 requested_user.friends_list.save()
 
+            # notify both parties of friends list change
+            notify_friends_list_change(chat_user.pk)
+            notify_friends_list_change(requested_user.pk)
             return Response(
                 {
                     "success": True,
@@ -195,18 +199,9 @@ def send_request(request):
         else:
             chat_user.friends_list.requested_users.add(requested_user)
             chat_user.friends_list.save()
-            channel_layer = get_channel_layer()
-            print(
-                f"sending message to group user_{requested_user.user.pk}"
-            )
-            # notify requested user
-            async_to_sync(channel_layer.group_send)(
-                f"user_{requested_user.user.pk}",
-                {
-                    "type": "received_friend_request",
-                    "payload": serializer.data,
-                },
-            )
+            # notify both parties of friends list change
+            notify_friends_list_change(chat_user.pk)
+            notify_friends_list_change(requested_user.pk)
             return Response(
                 {"success": True, "message": "Request sent"},
                 status=status.HTTP_200_OK,
@@ -244,6 +239,11 @@ def cancel_request(request):
             )
         chat_user.friends_list.requested_users.remove(requested_user)
         chat_user.friends_list.save()
+
+        # notify both parties of friends list change
+        notify_friends_list_change(chat_user.pk)
+        notify_friends_list_change(requested_user.pk)
+
         return Response(
             {"success": True, "message": "Request cancelled"},
             status=status.HTTP_200_OK,
@@ -285,6 +285,10 @@ def accept_friend_request(request):
             chat_user.friends_list.save()
             requesting_user.friends_list.save()
 
+        # notify both parties of friends list change
+        notify_friends_list_change(chat_user.pk)
+        notify_friends_list_change(requesting_user.pk)
+
         return Response(
             {"success": True, "message": "Friend request accepted"},
             status=status.HTTP_200_OK,
@@ -321,6 +325,10 @@ def reject_friend_request(request):
             )
         requested_user.friends_list.requested_users.remove(chat_user)
         requested_user.friends_list.save()
+
+        # notify both parties of friends list change
+        notify_friends_list_change(chat_user.pk)
+        notify_friends_list_change(requested_user.pk)
         return Response(
             {"success": True, "message": "Friend request rejected"},
             status=status.HTTP_200_OK,
@@ -542,19 +550,8 @@ def send_message(request, chat_id):
     message_by_chat_data = MessageByChatSerializer(
         {"chat_id": chat_id, "message": message_data}
     ).data
-    # --- Publish to Channels group ---
+    # notify users in chat of new message (and supply message)
     channel_layer = get_channel_layer()
-    # send to chat (factor out when we have the UserConsumer set up)
-    # group_name = (
-    #     f"chat_{chat_id}"  # should match the consumer's group name
-    # )
-    # # async_to_sync(channel_layer.group_send)(
-    # #     group_name,
-    # #     {
-    # #         "type": "chat_message",  # maps to consumer method
-    # #         "message": message_data,
-    # #     },
-    # # )
     chat = Chat.objects.get(pk=chat_id)
     for chat_user in chat.users.all():
         print(f"sending message to group user_{chat_user.user.pk}")

@@ -115,6 +115,16 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
         )
 
+    async def friends_list_change(self, event):
+        """tell user that friends list change has occured"""
+        # Send message to WebSocket client
+        print("friends_list_change received")
+        await self.send(
+            text_data=json.dumps(
+                {"type": event["type"], "payload": event["payload"]}
+            )
+        )
+
     async def received_friend_request(self, event):
         """recieved new friend request"""
         print(f"received_friend_request: {event}")
