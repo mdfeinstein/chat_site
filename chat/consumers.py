@@ -2,6 +2,7 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import ChatUser, Chat
 from channels.db import database_sync_to_async
+from asyncio import gather
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
@@ -74,6 +75,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
 
 class UserConsumer(AsyncWebsocketConsumer):
+    @staticmethod
+    @database_sync_to_async
+    def change_login_status(user, loggedIn):
+        chat_user = ChatUser.objects.get(user=user)
+        chat_user.loggedIn = loggedIn
+        chat_user.save()
+
+    @staticmethod
+    @database_sync_to_async
+    def get_friends_ids(user):
+        chat_user = ChatUser.objects.get(user=user)
+        friends = chat_user.friends_list.friends.all()
+        friends_ids = [friend.user.pk for friend in friends]
+        return friends_ids
+
     async def connect(self):
         user = self.scope.get("user")
         print(f"user: {user}")
@@ -96,14 +112,44 @@ class UserConsumer(AsyncWebsocketConsumer):
             subprotocol=protocol
         )  # Accept the WebSocket connection
         print("accepted")
+        # mark as online in db
+        await UserConsumer.change_login_status(user, True)
+        # alert friends
+        friends_ids = await UserConsumer.get_friends_ids(user)
+        alert_tasks = [
+            self.channel_layer.group_send(
+                f"user_{friend_id}",
+                {
+                    "type": "friends_list_change",
+                    "payload": None,
+                },
+            )
+            for friend_id in friends_ids
+        ]
+        await gather(*alert_tasks)
 
     async def disconnect(self, close_code):
         # Leave group
-
         print(f"closed. Code: {close_code}")
         await self.channel_layer.group_discard(
             self.room_group_name, self.channel_name
         )
+        user = self.scope.get("user")
+        await UserConsumer.change_login_status(user, False)
+        print(f"user {user.username} disconnected")
+        friends_ids = await UserConsumer.get_friends_ids(user)
+        # alert friends about offline status
+        alert_tasks = [
+            self.channel_layer.group_send(
+                f"user_{friend_id}",
+                {
+                    "type": "friends_list_change",
+                    "payload": None,
+                },
+            )
+            for friend_id in friends_ids
+        ]
+        await gather(*alert_tasks)
 
     async def chat_message(self, event):
         """Receive message from group"""
