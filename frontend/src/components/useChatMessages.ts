@@ -1,15 +1,45 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import { getMessages } from "../api/api";
 import type { MessageResponse } from "../api/api";
+import { useUserSocketContext } from "./UserSocketContext";
+import type { WebSocketEvent } from "./useUserSocket";
+import { useEffect } from "react";
 
-interface ChatMessagesData {
+
+export interface ChatMessagesData {
   messages: MessageResponse[];
   lastMessageNumber: number;
   prevLastMessageNumber: number;
 }
 
+let handlersRegistered = false;
+
 const useChatMessages = (chatId: number, token: string, refreshTime: number) => {
   const queryClient = useQueryClient();
+  const { registerHandler, removeHandler } = useUserSocketContext();
+  const onNewMessage = (event: WebSocketEvent) => {
+    // push to specific chat cache, if intiialized
+    const {chat_id, message} = event.payload!;
+    if (queryClient.getQueryData(['messages', chat_id])) {
+      queryClient.setQueryData(['messages', chat_id], (old : ChatMessagesData) => {
+        old.messages.push(message);
+        old.prevLastMessageNumber = old.lastMessageNumber;
+        old.lastMessageNumber = message.message_number;
+        return old;
+      });            
+    }
+  };
+  useEffect(() => {
+    if (!handlersRegistered) {
+      registerHandler("chat_message", onNewMessage);
+      handlersRegistered = true;
+    }
+    return () => {
+      removeHandler("chat_message", onNewMessage);
+      handlersRegistered = false;
+    };
+  }, [registerHandler, removeHandler]);
+
   const query = useQuery({
     queryKey: ['messages', chatId],
     queryFn: async () => {

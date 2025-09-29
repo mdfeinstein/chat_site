@@ -136,3 +136,13 @@ class UserConsumer(AsyncWebsocketConsumer):
                 }
             )
         )
+
+    async def chat_list_change(self, event):
+        """tell user that chat list change has occured"""
+        # Send message to WebSocket client
+        print("chat_list_change received")
+        await self.send(
+            text_data=json.dumps(
+                {"type": event["type"], "payload": event["payload"]}
+            )
+        )

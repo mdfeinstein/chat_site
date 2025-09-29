@@ -13,7 +13,6 @@ import { getMessages } from "../api/api";
 import type { MessageResponse } from "../api/api";
 import { useChatPageContext } from "./ChatPageContext";
 import useChatMessages from "./useChatMessages";
-import useChatSocket from "./useChatSocket";
 
 export interface Message {
   message: MessageResponse;
@@ -37,18 +36,6 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
   } = useChatMessages(chatId, token!, 0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-
-  const { messages: socketMessages, flushMessages } = useChatSocket(
-    chatId,
-    token!
-  );
-  useEffect(() => {
-    if (messageQueryData && socketMessages && socketMessages.length > 0) {
-      const messages = flushMessages();
-      console.log("from messages container: ", messages);
-      ingestMessages(messages);
-    }
-  }, [socketMessages]);
 
   // Function to scroll to bottom of messages
   const scrollToBottom = () => {

@@ -8,7 +8,6 @@ import type {
 import { getChatsWithHistory } from "../api/api";
 import { useChatPageContext } from "./ChatPageContext";
 import useChatsWithHistory from "./useChatsWithHistory";
-import useChatSocket from "./useChatSocket";
 import ChatStub from "./ChatStub";
 
 const formatDate = (createdAt: string) => {

@@ -7,13 +7,12 @@ import TopBar from "./TopBar";
 import SendMessageForm from "./SendMessageForm";
 import CollapsibleNavBar from "./CollapsibleNavBar";
 import useChatsWithHistory from "./useChatsWithHistory";
-import useUserSocket from "./useUserSocket";
+import { UserSocketProvider } from "./UserSocketContext";
 
 interface ChatPageProps {}
 
 const ChatPage: React.FC<ChatPageProps> = ({}) => {
   const { token, chatUser } = useChatPageContext();
-  const userSocket = useUserSocket(token!);
   const {
     data: chatsData,
     isLoading: chatsLoading,
@@ -42,8 +41,6 @@ const ChatPage: React.FC<ChatPageProps> = ({}) => {
   // }, []);
 
   return (
-    // <ChatPageContextProvider value={{ token: token, chatUser: userInfo }}>
-
     <Box
       style={{
         // display: 'flex',
@@ -124,7 +121,6 @@ const ChatPage: React.FC<ChatPageProps> = ({}) => {
         </Box>
       </Box>
     </Box>
-    // </ChatPageContextProvider>
   );
 };
 

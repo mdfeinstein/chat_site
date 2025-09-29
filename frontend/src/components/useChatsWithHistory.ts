@@ -1,10 +1,50 @@
 import {useQuery, useQueryClient} from "@tanstack/react-query";
 import { getChatsWithHistory } from "../api/api";
 import type { GetChatsWithHistoryResponse, MessageResponse } from "../api/api";
+import { useUserSocketContext } from "./UserSocketContext";
+import { useEffect } from "react";
+import type { MessageByChat, WebSocketEvent } from "./useUserSocket";
 
+let handlersRegistered = false;
 
 const useChatsWithHistory = (token: string, refreshTime: number) => {
   const queryClient = useQueryClient();
+  // hook up socket event to invalidate query
+  const {registerHandler, removeHandler} = useUserSocketContext();
+  const onChatListChange = () => {
+    invalidate();
+  };
+
+  const onNewMessage = (event : WebSocketEvent) => {
+    // push to chatsWithHistory cache
+    console.log(event);
+    queryClient.setQueryData(['chatsWithHistory'], (old : GetChatsWithHistoryResponse) => {
+      const { chat_id, message} = event.payload!;
+
+      const targetChatIdx = old.chats.findIndex(chat => chat.chat_id === chat_id);
+      if (targetChatIdx === -1) return old; //chat not found, do nothing
+      const oldMessages = old.chats[targetChatIdx].last_messages ?? [];
+      const merged = [message, ...oldMessages];
+      const oldCopy = old;
+      oldCopy.chats[targetChatIdx].last_messages = merged;
+      return oldCopy;
+    });
+  };
+
+  useEffect(() => {
+    if (!handlersRegistered) {
+      registerHandler("chat_list_change", onChatListChange);
+      registerHandler("chat_message", onNewMessage);
+      handlersRegistered = true;
+      console.log("registered handlers");
+    }
+    return () => {
+      removeHandler("chat_list_change", onChatListChange);
+      removeHandler("chat_message", onNewMessage);
+      handlersRegistered = false;
+    };
+  }, [registerHandler, removeHandler]);
+
   const query = useQuery({
     queryKey: ['chatsWithHistory'],
     queryFn: async () => {

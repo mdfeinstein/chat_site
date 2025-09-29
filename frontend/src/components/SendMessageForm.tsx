@@ -13,7 +13,6 @@ import {
 import { IconSend2 } from "@tabler/icons-react";
 import useChatMessages from "./useChatMessages";
 import { useMutation } from "@tanstack/react-query";
-import useChatSocket from "./useChatSocket";
 import { send } from "process";
 
 interface SendMessageFormProps {
@@ -30,7 +29,7 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
     mutationFn: (data: NewMessageRequest) => sendMessage(data, chatId, token!),
     onSuccess: () => {
       setMessage("");
-      // invalidateMessages();
+      invalidateMessages();
     },
     onError: (e) => {
       setError(e.message);

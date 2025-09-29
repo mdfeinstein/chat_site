@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { MessageResponse, ChatUserMinimal, GetChatsWithHistoryResponse, GetFriendDataResponse, ChatUserResponse } from "../api/api";
 import type { ChatMessagesData } from "./useChatMessages";
-type MessageByChat = { chat_id: number, message: MessageResponse };
 
-type WebSocketEvent = NewMessageEvent | FriendListChangedEvent;
+export type MessageByChat = { chat_id: number, message: MessageResponse };
+export type WebSocketEvent = NewMessageEvent | FriendListChangedEvent | ChatListChangedEvent;
 type NewMessageEvent = {
   type: "chat_message";
   payload: MessageByChat;
@@ -13,17 +13,31 @@ type FriendListChangedEvent = {
   type: "friends_list_change";
   payload: null;
 }
+type ChatListChangedEvent = {
+  type: "chat_list_change";
+  payload: null;
+}
 
 type UnknownEventType = {
   type: string;
   payload: any;
 }
 
-type EventType = "chat_message" | "received_friend_request";
 
-const useUserSocket = (token :string) => {
+const useUserSocket = (token : string) => {
   const queryClient = useQueryClient();
   const socketRef = useRef<WebSocket | null>(null);
+  const handlersRef = useRef<Record<string, ((event: WebSocketEvent) => void)[]>>({});
+  const registerHandler = (type: string, handler: (event: WebSocketEvent) => void) => {
+    if (!handlersRef.current[type]) {
+      handlersRef.current[type] = [];
+    }
+    handlersRef.current[type].push(handler);
+  };
+  
+  const removeHandler = (type: string, handler: (event: WebSocketEvent) => void) => {
+    handlersRef.current[type] = handlersRef.current[type]?.filter((h) => h !== handler);
+  };
 
   useEffect(() => {
     const wsProtocol = window.location.protocol === "https:" ? "wss" : "ws";
@@ -38,36 +52,16 @@ const useUserSocket = (token :string) => {
     socket.onmessage = (event: MessageEvent) => {
       try {
         const data : WebSocketEvent= JSON.parse(event.data);
+        (handlersRef.current[data.type] ?? []).forEach((handler) => handler(data));
         switch (data.type) {
           case "chat_message":
             console.log("chat_message received");
-            // push to chatsWithHistory cache
-            queryClient.setQueryData(['chatsWithHistory'], (old : GetChatsWithHistoryResponse) => {
-              const { chat_id, message} = data.payload;
-
-              const targetChatIdx = old.chats.findIndex(chat => chat.chat_id === chat_id);
-              if (targetChatIdx === -1) return old; //chat not found, do nothing
-              const oldMessages = old.chats[targetChatIdx].last_messages ?? [];
-              const merged = [message, ...oldMessages];
-              old.chats[targetChatIdx].last_messages = merged;
-              return old;
-            });
-            //push to specific chat cache, if intiialized
-            const {chat_id, message} = data.payload;
-            if (queryClient.getQueryData(['messages', chat_id])) {
-              queryClient.setQueryData(['messages', chat_id], (old : ChatMessagesData) => {
-                old.messages.push(message);
-                old.prevLastMessageNumber = old.lastMessageNumber;
-                old.lastMessageNumber = message.message_number;
-                return old;
-              });            
-            }
+            break;
+          case "chat_list_change":
             break;
           case "friends_list_change":
-            queryClient.invalidateQueries({queryKey: ['friendsData']});
-            queryClient.invalidateQueries({queryKey: ['requestableUsers']});
             break;
-          
+
           default:
             // if (typeof data.type !== "string") return;
             console.log(`Event type not recognized. JSON data: ${JSON.stringify(data)}`);
@@ -90,7 +84,7 @@ const useUserSocket = (token :string) => {
   }, [token]);
 
 
-  return socketRef;
-}
+  return {socketRef, registerHandler, removeHandler};
+};
 
 export default useUserSocket;

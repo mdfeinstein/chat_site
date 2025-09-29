@@ -26,7 +26,10 @@ from .serializers import (
     ChatsWithHistorySerializer,
     FriendDataSerializer,
 )
-from .ws_notifications import notify_friends_list_change
+from .ws_notifications import (
+    notify_friends_list_change,
+    notify_chat_list_change,
+)
 from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Max
@@ -372,6 +375,8 @@ def create_chat(request):
         new_chat = Chat.objects.create()
         new_chat.users.set(chat_users)
         new_chat.save()
+        for chat_user_ in chat_users:
+            notify_chat_list_change(chat_user_.pk)
         return Response(
             {"success": True, "message": "Chat created successfully"}
         )
@@ -595,6 +600,8 @@ def exit_chat(request, chat_id):
             if chat_deleted
             else "Chat exited successfully"
         )
+        for chat_user_ in chat.users.all():
+            notify_chat_list_change(chat_user_.pk)
         return Response({"success": True, "message": message})
 
     else:

@@ -46,7 +46,6 @@ import useFriendsData from "./useFriendsData";
 import useRequestableUsers from "./useRequestableUsers";
 import useChatsWithHistory from "./useChatsWithHistory";
 import { useMutation } from "@tanstack/react-query";
-import { create } from "domain";
 
 const FriendsSection = () => {
   const theme = useMantineTheme();
