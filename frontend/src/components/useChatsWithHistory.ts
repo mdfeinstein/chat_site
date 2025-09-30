@@ -19,6 +19,7 @@ const useChatsWithHistory = (token: string, refreshTime: number) => {
     // push to chatsWithHistory cache
     console.log(event);
     queryClient.setQueryData(['chatsWithHistory'], (old : GetChatsWithHistoryResponse) => {
+      if (event.type !== "chat_message") return; //this shouldnt be relevant, but doing this to narrow the type
       const { chat_id, message} = event.payload!;
 
       const targetChatIdx = old.chats.findIndex(chat => chat.chat_id === chat_id);

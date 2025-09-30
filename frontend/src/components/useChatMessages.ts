@@ -19,6 +19,7 @@ const useChatMessages = (chatId: number, token: string, refreshTime: number) => 
   const { registerHandler, removeHandler } = useUserSocketContext();
   const onNewMessage = (event: WebSocketEvent) => {
     // push to specific chat cache, if intiialized
+    if (event.type !== "chat_message") return; //this shouldnt be relevant, but doing this to narrow the type
     const {chat_id, message} = event.payload!;
     if (queryClient.getQueryData(['messages', chat_id])) {
       queryClient.setQueryData(['messages', chat_id], (old : ChatMessagesData) => {

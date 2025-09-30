@@ -6,13 +6,14 @@ import React, {
   memo,
   use,
 } from "react";
-import { Stack, Box, ScrollArea } from "@mantine/core";
+import { Stack, Box, ScrollArea, Text, Paper } from "@mantine/core";
 import MessageContainer from "./MessageContainer";
 import { ScrollToBottomButton } from "./ScrollToBottomButton";
 import { getMessages } from "../api/api";
 import type { MessageResponse } from "../api/api";
 import { useChatPageContext } from "./ChatPageContext";
 import useChatMessages from "./useChatMessages";
+import useIsTyping from "./useIsTyping";
 
 export interface Message {
   message: MessageResponse;
@@ -28,6 +29,12 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
 
   // Get the user info from the context
   const { token, chatUser } = useChatPageContext();
+  const { typingUsers } = useIsTyping(chatId);
+
+  useEffect(() => {
+    scrollToBottomInstant();
+    console.log("typingUsers", typingUsers);
+  }, [typingUsers]);
   const {
     data: messageQueryData,
     isLoading: messageQueryLoading,
@@ -100,6 +107,21 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
               message.message_number > messageQueryData?.prevLastMessageNumber
             }
           />
+        ))}
+        {typingUsers.map((user) => (
+          <Paper
+            key={user}
+            w={"50%"}
+            // ta="center"
+            style={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              margin: "0 0 0 auto",
+            }}
+          >
+            <Text> {user} is typing...</Text>
+          </Paper>
         ))}
       </Stack>
 

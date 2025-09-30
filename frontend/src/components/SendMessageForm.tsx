@@ -1,7 +1,7 @@
 import { useChatPageContext } from "./ChatPageContext";
 import { sendMessage } from "../api/api";
 import type { NewMessageRequest } from "../api/api";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
   Button,
   Textarea,
@@ -14,15 +14,22 @@ import { IconSend2 } from "@tabler/icons-react";
 import useChatMessages from "./useChatMessages";
 import { useMutation } from "@tanstack/react-query";
 import { send } from "process";
+import { useUserSocketContext } from "./UserSocketContext";
+import throttle from "./throttle";
 
 interface SendMessageFormProps {
   chatId: number;
 }
 
 const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
-  const { token } = useChatPageContext();
+  const { token, chatUser } = useChatPageContext();
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const { sendTyping } = useUserSocketContext();
+  const throttledSendTyping = useMemo(
+    () => throttle(sendTyping, 1000),
+    [sendTyping]
+  );
   // const { sendMessage: sendMessageChannel } = useChatSocket(chatId, token!);
   const { invalidate: invalidateMessages } = useChatMessages(chatId, token!, 0);
   const sendMessageMutation = useMutation({
@@ -71,6 +78,8 @@ const SendMessageForm: React.FC<SendMessageFormProps> = ({ chatId }) => {
             e.preventDefault();
             console.log("about send...");
             sendFunction();
+          } else {
+            throttledSendTyping({ chat_id: chatId, user_id: chatUser!.id });
           }
         }}
         required

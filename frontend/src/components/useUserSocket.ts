@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import type { MessageResponse, ChatUserMinimal, GetChatsWithHistoryResponse, GetFriendDataResponse, ChatUserResponse } from "../api/api";
-import type { ChatMessagesData } from "./useChatMessages";
+import type { MessageResponse } from "../api/api";
 
 export type MessageByChat = { chat_id: number, message: MessageResponse };
-export type WebSocketEvent = NewMessageEvent | FriendListChangedEvent | ChatListChangedEvent;
-type NewMessageEvent = {
+export type WebSocketEvent = NewMessageEvent | FriendListChangedEvent | ChatListChangedEvent | IsTypingEvent;
+export type NewMessageEvent = {
   type: "chat_message";
   payload: MessageByChat;
 }
-type FriendListChangedEvent = {
+export type FriendListChangedEvent = {
   type: "friends_list_change";
   payload: null;
 }
-type ChatListChangedEvent = {
+export type ChatListChangedEvent = {
   type: "chat_list_change";
   payload: null;
+}
+export type IsTypingEvent = {
+  type: "is_typing";
+  payload: TypingPayload;
 }
 
 type UnknownEventType = {
@@ -23,9 +26,12 @@ type UnknownEventType = {
   payload: any;
 }
 
+export type TypingPayload = {
+  chat_id: number;
+  user_id: number;
+}
 
 const useUserSocket = (token : string) => {
-  const queryClient = useQueryClient();
   const socketRef = useRef<WebSocket | null>(null);
   const handlersRef = useRef<Record<string, ((event: WebSocketEvent) => void)[]>>({});
   const registerHandler = (type: string, handler: (event: WebSocketEvent) => void) => {
@@ -37,6 +43,12 @@ const useUserSocket = (token : string) => {
   
   const removeHandler = (type: string, handler: (event: WebSocketEvent) => void) => {
     handlersRef.current[type] = handlersRef.current[type]?.filter((h) => h !== handler);
+  };
+
+  const sendTyping = (data: TypingPayload) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify({ type: "send_typing", payload: data }));
+    }
   };
 
   useEffect(() => {
@@ -61,7 +73,8 @@ const useUserSocket = (token : string) => {
             break;
           case "friends_list_change":
             break;
-
+          case "is_typing":
+            break;
           default:
             // if (typeof data.type !== "string") return;
             console.log(`Event type not recognized. JSON data: ${JSON.stringify(data)}`);
@@ -84,7 +97,7 @@ const useUserSocket = (token : string) => {
   }, [token]);
 
 
-  return {socketRef, registerHandler, removeHandler};
+  return {socketRef, registerHandler, removeHandler, sendTyping};
 };
 
 export default useUserSocket;

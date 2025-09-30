@@ -151,6 +151,21 @@ class UserConsumer(AsyncWebsocketConsumer):
         ]
         await gather(*alert_tasks)
 
+    async def receive(self, text_data):
+        """Handle incoming messages from the client"""
+        try:
+            event = json.loads(text_data)
+            message_type = event.get("type")
+
+            if message_type == "send_typing":
+                await self.send_typing(event)
+            else:
+                print(f"Unknown message type: {message_type}")
+        except json.JSONDecodeError as e:
+            print(f"Invalid JSON received: {e}")
+        except Exception as e:
+            print(f"Error handling message: {e}")
+
     async def chat_message(self, event):
         """Receive message from group"""
         # Send message to WebSocket client
@@ -171,18 +186,6 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
         )
 
-    async def received_friend_request(self, event):
-        """recieved new friend request"""
-        print(f"received_friend_request: {event}")
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "type": event["type"],
-                    "payload": event["payload"],
-                }
-            )
-        )
-
     async def chat_list_change(self, event):
         """tell user that chat list change has occured"""
         # Send message to WebSocket client
@@ -192,3 +195,43 @@ class UserConsumer(AsyncWebsocketConsumer):
                 {"type": event["type"], "payload": event["payload"]}
             )
         )
+
+    async def is_typing(self, event):
+        """reports to users in chat that user is typing
+        expected payload: {"chat_id": int, "user_id": int}
+        """
+        print("is_typing received")
+        await self.send(
+            text_data=json.dumps(
+                {"type": event["type"], "payload": event["payload"]}
+            )
+        )
+
+    @staticmethod
+    @database_sync_to_async
+    def get_other_users_in_chat(chat_id, user_id):
+        chat = Chat.objects.get(pk=chat_id)
+        chat_users = chat.users.exclude(user__pk=user_id)
+        return [chat_user.user.pk for chat_user in chat_users]
+
+    async def send_typing(self, event):
+        """broadcasts to users in chat that user is typing
+        expected payload: {"chat_id": int, "user_id": int}
+        """
+        print("send_typing received")
+        user = self.scope.get("user")
+        other_users = await UserConsumer.get_other_users_in_chat(
+            event["payload"]["chat_id"], user.pk
+        )
+        print(f"other users: {other_users}")
+        send_tasks = [
+            self.channel_layer.group_send(
+                f"user_{user_id}",
+                {
+                    "type": "is_typing",
+                    "payload": event["payload"],
+                },
+            )
+            for user_id in other_users
+        ]
+        await gather(*send_tasks)
