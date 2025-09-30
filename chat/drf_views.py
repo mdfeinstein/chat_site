@@ -31,30 +31,10 @@ from .ws_notifications import (
     notify_chat_list_change,
 )
 from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
 from django.db.models import Q, Max
-from django.db.models.functions import Lower
-import json
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from channels.layers import get_channel_layer
 from asgiref.sync import async_to_sync
-import logging
-
-# obtain_auth_token = ObtainAuthToken.as_view()
-
-
-# @extend_schema(
-#     description="Login with token",
-#     request=AuthTokenRequestSerializer,
-#     responses={
-#         200: AuthTokenResponseSerializer,
-#         400: AuthErrorResponseSerializer,
-#     },
-# )
-# @api_view(["POST"])
-# @permission_classes([])
-# def login_auth(request):
-#     return obtain_auth_token(request)
 
 
 @extend_schema(

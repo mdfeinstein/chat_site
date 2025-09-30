@@ -16,11 +16,12 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path, include
+from django.shortcuts import redirect
+from django.views.generic import RedirectView, TemplateView
+from django.urls import path
 from django.contrib.auth import views as auth_views
 from rest_framework.authtoken.views import ObtainAuthToken
 from drf_spectacular.utils import extend_schema
-import chat.views
 import chat.drf_views
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -136,86 +137,16 @@ urlpatterns = [
         chat.drf_views.exit_chat,
         name="exit_chat_api",
     ),
-    path("", chat.views.redirect_to_login_or_home, name="landing"),
-    path("login", chat.views.login, name="login"),
     path(
-        "login_request",
-        chat.views.ChatUserLoginView.as_view(
-            template_name="login.html", next_page="home"
+        "",
+        RedirectView.as_view(
+            pattern_name="chat_page", permanent=True
         ),
-        name="login_request",
+        name="landing",
     ),
     path(
-        "home", chat.views.home, name="home"
-    ),  # chat list, friends list, logout button
-    path("chat", chat.views.chat, name="chat"),
-    path("chat_page", chat.views.chat_page, name="chat_page"),
-    path(
-        "logout",
-        chat.views.ChatUserLogoutView.as_view(
-            template_name="logout.html"
-        ),
-        name="logout",
-    ),
-    path("add_chat", chat.views.add_chat, name="add_chat"),
-    path(
-        "send_message", chat.views.send_message, name="send_message"
-    ),
-    path(
-        "send_message_async",
-        chat.views.send_message_async,
-        name="send_message_async",
-    ),
-    path(
-        "get_new_messages",
-        chat.views.get_new_messages,
-        name="get_new_messages",
-    ),
-    path("exit_chat", chat.views.exit_chat, name="exit_chat"),
-    path(
-        "request_friends",
-        chat.views.request_friends,
-        name="request_friends",
-    ),
-    path(
-        "request_friend",
-        chat.views.request_friend,
-        name="request_friend",
-    ),
-    path(
-        "get_requestable_users",
-        chat.views.get_requestable_users,
-        name="get_requestable_users",
-    ),
-    path("get_chats", chat.views.get_chats, name="get_chats"),
-    path(
-        "get_friend_info",
-        chat.views.get_friend_info,
-        name="get_friend_info",
-    ),
-    path(
-        "get_chat_data",
-        chat.views.get_chat_data,
-        name="get_chat_data",
-    ),
-    path(
-        "get_chats_with_history",
-        chat.views.get_chats_with_history,
-        name="get_chats_with_history",
-    ),
-    path(
-        "cancel_request",
-        chat.views.cancel_request,
-        name="cancel_request",
-    ),
-    path(
-        "accept_invite",
-        chat.views.accept_invite,
-        name="accept_invite",
-    ),
-    path(
-        "reject_invite",
-        chat.views.reject_invite,
-        name="reject_invite",
+        "chat_page",
+        TemplateView.as_view(template_name="chat.html"),
+        name="chat_page",
     ),
 ]

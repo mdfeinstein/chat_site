@@ -59,28 +59,14 @@ const useUserSocket = (token : string) => {
     socketRef.current = socket;
 
     socket.onopen = () => {
-      console.log(`WebSocket connected to user via token ${token}`);
     };
 
     socket.onmessage = (event: MessageEvent) => {
       try {
         const data : WebSocketEvent= JSON.parse(event.data);
         (handlersRef.current[data.type] ?? []).forEach((handler) => handler(data));
-        switch (data.type) {
-          case "chat_message":
-            console.log("chat_message received");
-            break;
-          case "chat_list_change":
-            break;
-          case "friends_list_change":
-            break;
-          case "is_typing":
-            break;
-          default:
-            // if (typeof data.type !== "string") return;
-            console.log(`Event type not recognized. JSON data: ${JSON.stringify(data)}`);
         }
-      } catch (err) {
+      catch (err) {
         console.error("Error parsing WebSocket message", err);
       }
     };

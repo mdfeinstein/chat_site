@@ -16,7 +16,7 @@
     {% vite_hmr_client %} {% vite_asset 'src/main.tsx' %}
   </head>
   <body>
-    {% csrf_token %}
+    {% comment %} {% csrf_token %} {% endcomment %}
     <div id="react-chat-page"></div>
   </body>
 </html>

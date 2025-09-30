@@ -32,8 +32,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
   const { typingUsers } = useIsTyping(chatId);
 
   useEffect(() => {
-    scrollToBottomInstant();
-    console.log("typingUsers", typingUsers);
+    if (scrolledToBottom) scrollToBottomInstant();
   }, [typingUsers]);
   const {
     data: messageQueryData,

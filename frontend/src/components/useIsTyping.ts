@@ -17,7 +17,6 @@ const useIsTyping = (chatId: number) => {
   const onIsTyping = (event: WebSocketEvent) => {
     if (event.type !== "is_typing") return; //this shouldnt be relevant, but doing this to narrow the type
     const {user_id, chat_id, user_name} = event.payload!;
-    console.log("chat_id", chat_id);
     if (chat_id !== chatId) return; //
     if (user_name === undefined) return; //
     // Clear existing timeout for this user if it exists
