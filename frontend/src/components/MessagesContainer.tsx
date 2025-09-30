@@ -110,7 +110,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
         ))}
         {typingUsers.map((user) => (
           <Paper
-            key={user}
+            key={user.user_id}
             w={"50%"}
             // ta="center"
             style={{
@@ -120,7 +120,7 @@ const MessagesContainer: React.FC<MessagesContainerProps> = ({ chatId }) => {
               margin: "0 0 0 auto",
             }}
           >
-            <Text> {user} is typing...</Text>
+            <Text> {user.user_name} is typing...</Text>
           </Paper>
         ))}
       </Stack>

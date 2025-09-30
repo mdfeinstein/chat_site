@@ -1,6 +1,7 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from .models import ChatUser, Chat
+from django.contrib.auth.models import User
 from channels.db import database_sync_to_async
 from asyncio import gather
 
@@ -196,9 +197,18 @@ class UserConsumer(AsyncWebsocketConsumer):
             )
         )
 
+    @staticmethod
+    @database_sync_to_async
+    def get_username_from_user_id(user_id):
+        try:
+            user = User.objects.get(pk=user_id)
+        except ChatUser.DoesNotExist:
+            return None
+        return user.username
+
     async def is_typing(self, event):
         """reports to users in chat that user is typing
-        expected payload: {"chat_id": int, "user_id": int}
+        expected payload: {"chat_id": int, "user_id": int, "user_name": str}
         """
         print("is_typing received")
         await self.send(
@@ -220,9 +230,13 @@ class UserConsumer(AsyncWebsocketConsumer):
         """
         print("send_typing received")
         user = self.scope.get("user")
+        username = await UserConsumer.get_username_from_user_id(
+            user.pk
+        )
         other_users = await UserConsumer.get_other_users_in_chat(
             event["payload"]["chat_id"], user.pk
         )
+        event["payload"]["user_name"] = username
         print(f"other users: {other_users}")
         send_tasks = [
             self.channel_layer.group_send(
